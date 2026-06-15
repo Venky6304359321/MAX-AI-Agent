@@ -1,0 +1,1830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MAX &mdash; Venkatesh (Super Admin)</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap');
+
+:root {
+  --bg:    #020b18;
+  --bg2:   #041225;
+  --bg3:   #061a30;
+  --cyan:  #00d4ff;
+  --cyan2: #0099cc;
+  --blue:  #0066ff;
+  --green: #00ff88;
+  --orange:#ff8800;
+  --red:   #ff2244;
+  --yellow:#ffcc00;
+  --text:  #c8e6f5;
+  --text2: #6a9ab8;
+  --border:#0d3352;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:14px;overflow-x:hidden;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--cyan2);border-radius:2px;}
+
+/* -- SETUP SCREEN -- */
+#setupScreen{
+  position:fixed;inset:0;z-index:9999;
+  background:radial-gradient(ellipse at center, #061a30 0%, #020b18 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:32px;
+}
+.setup-logo{
+  font-family:'Orbitron',monospace;font-size:48px;font-weight:900;
+  color:var(--cyan);text-shadow:0 0 40px var(--cyan),0 0 80px var(--cyan2);
+  letter-spacing:8px;animation:logoGlow 3s infinite;
+}
+@keyframes logoGlow{0%,100%{text-shadow:0 0 40px var(--cyan);}50%{text-shadow:0 0 60px var(--cyan),0 0 100px var(--blue);}}
+.setup-sub{font-size:14px;color:var(--text2);letter-spacing:3px;font-family:'Orbitron',monospace;}
+.setup-card{
+  background:rgba(4,18,37,0.95);border:1px solid var(--border);border-radius:16px;
+  padding:40px;width:420px;
+  box-shadow:0 0 60px rgba(0,100,200,0.15);
+}
+.setup-title{
+  font-family:'Orbitron',monospace;font-size:13px;color:var(--cyan);
+  letter-spacing:2px;text-align:center;margin-bottom:8px;
+}
+.setup-hint{font-size:12px;color:var(--text2);text-align:center;margin-bottom:28px;}
+.user-btn{
+  width:100%;padding:14px 20px;margin-bottom:10px;
+  background:rgba(255,255,255,0.02);
+  border:1px solid var(--border);border-radius:8px;cursor:pointer;
+  display:flex;align-items:center;gap:16px;
+  transition:all 0.2s;text-align:left;
+}
+.user-btn:hover{background:rgba(0,212,255,0.06);border-color:var(--cyan2);}
+.user-btn.admin-btn:hover{background:rgba(0,100,255,0.1);border-color:var(--blue);}
+.user-avatar{
+  width:40px;height:40px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:15px;flex-shrink:0;
+}
+.av-admin{background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff;border:2px solid var(--cyan);box-shadow:0 0 12px rgba(0,212,255,0.4);}
+.av-dev{background:linear-gradient(135deg,#0055aa,#0088cc);color:#fff;}
+.av-mkt{background:linear-gradient(135deg,#660099,#aa00cc);color:#fff;}
+.av-ops{background:linear-gradient(135deg,#006633,#009944);color:#fff;}
+.av-ceo{background:linear-gradient(135deg,#884400,#cc6600);color:#fff;}
+.user-info .name{font-size:14px;font-weight:700;color:var(--text);}
+.user-info .role{font-size:11px;color:var(--text2);margin-top:2px;}
+.admin-lock{margin-left:auto;font-size:12px;color:var(--cyan);opacity:0.7;}
+
+/* OTP boxes */
+.otp-box{
+  width:44px;height:52px;border-radius:8px;
+  border:1px solid var(--border);background:rgba(255,255,255,0.03);
+  color:var(--cyan);font-family:'Orbitron',monospace;font-size:22px;font-weight:700;
+  text-align:center;outline:none;transition:all 0.2s;
+  caret-color:var(--cyan);
+}
+.otp-box:focus{border-color:var(--cyan);box-shadow:0 0 10px rgba(0,212,255,0.3);background:rgba(0,212,255,0.05);}
+.otp-box.filled{border-color:var(--cyan2);background:rgba(0,212,255,0.08);}
+.otp-box.error{border-color:var(--red);box-shadow:0 0 8px rgba(255,34,68,0.3);}
+
+/* -- MAIN APP -- */
+#mainApp{display:none;}
+
+/* TOPNAV */
+.topnav{
+  position:fixed;top:0;left:0;right:0;z-index:100;height:56px;
+  background:linear-gradient(90deg,#020b18,#041830,#020b18);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;box-shadow:0 2px 20px rgba(0,100,200,0.2);
+}
+.nav-left{display:flex;align-items:center;gap:16px;}
+.logo{font-family:'Orbitron',monospace;font-size:20px;font-weight:900;color:var(--cyan);text-shadow:0 0 20px var(--cyan);letter-spacing:4px;}
+.logo span{color:var(--blue);}
+.nav-badge{
+  display:flex;align-items:center;gap:6px;
+  font-size:10px;color:var(--green);font-family:'Orbitron',monospace;
+}
+.pulse{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite;box-shadow:0 0 6px var(--green);}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+.nav-right{display:flex;align-items:center;gap:16px;}
+.nav-clock{font-family:'Orbitron',monospace;font-size:13px;color:var(--cyan);letter-spacing:2px;}
+.nav-user{display:flex;align-items:center;gap:8px;}
+.nav-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--cyan));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;border:1px solid var(--cyan);box-shadow:0 0 10px rgba(0,212,255,0.3);}
+.nav-name{font-size:13px;font-weight:700;}
+.nav-role{font-size:10px;color:var(--cyan);font-family:'Orbitron',monospace;letter-spacing:1px;}
+.hey-btn{
+  padding:7px 14px;border-radius:20px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--blue),var(--cyan2));
+  color:#fff;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;
+  letter-spacing:1px;transition:all 0.2s;
+  box-shadow:0 0 12px rgba(0,100,255,0.3);
+}
+.hey-btn:hover{box-shadow:0 0 20px rgba(0,212,255,0.5);transform:scale(1.03);}
+
+/* LAYOUT */
+.layout{
+  display:grid;grid-template-columns:200px 1fr 280px;
+  height:calc(100vh - 56px);margin-top:56px;overflow:hidden;
+}
+
+/* SIDEBAR */
+.sidebar{background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;padding:16px 0;}
+.sb-label{font-family:'Orbitron',monospace;font-size:9px;color:var(--text2);letter-spacing:2px;padding:10px 16px 4px;text-transform:uppercase;}
+.sb-item{
+  display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;
+  border-left:3px solid transparent;transition:all 0.2s;
+  font-size:13px;font-weight:600;color:var(--text2);
+}
+.sb-item:hover,.sb-item.active{background:rgba(0,212,255,0.05);border-left-color:var(--cyan);color:var(--cyan);}
+.sb-icon{font-size:14px;width:18px;text-align:center;}
+.sb-badge{margin-left:auto;font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;}
+.sb-badge.red{background:var(--red);color:#fff;}
+.sb-badge.orange{background:var(--orange);color:#000;}
+.sb-badge.green{background:var(--green);color:#000;}
+.sb-divider{height:1px;background:var(--border);margin:8px 16px;}
+
+/* MAIN */
+.main{overflow-y:auto;padding:20px;background:var(--bg);}
+
+/* RIGHT */
+.right{background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+
+/* CARDS */
+.card{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:16px;position:relative;overflow:hidden;margin-bottom:16px;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:0.4;}
+.card-title{font-family:'Orbitron',monospace;font-size:10px;color:var(--text2);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;}
+
+/* GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:16px;}
+
+/* STAT */
+.stat{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;position:relative;overflow:hidden;}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.stat.s-red{border-color:rgba(255,34,68,0.35);}
+.stat.s-red::before{background:var(--red);}
+.stat.s-green{border-color:rgba(0,255,136,0.35);}
+.stat.s-green::before{background:var(--green);}
+.stat.s-orange{border-color:rgba(255,136,0,0.35);}
+.stat.s-orange::before{background:var(--orange);}
+.stat.s-blue::before{background:var(--blue);}
+.stat-label{font-size:10px;color:var(--text2);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:6px;}
+.stat-val{font-family:'Orbitron',monospace;font-size:26px;font-weight:700;line-height:1;}
+.stat-val.cv{color:var(--cyan);}
+.stat-val.gv{color:var(--green);text-shadow:0 0 10px var(--green);}
+.stat-val.rv{color:var(--red);text-shadow:0 0 10px var(--red);}
+.stat-val.ov{color:var(--orange);text-shadow:0 0 10px var(--orange);}
+.stat-sub{font-size:11px;color:var(--text2);margin-top:5px;}
+
+/* MORNING BRIEF */
+.brief{
+  background:linear-gradient(135deg,rgba(0,50,100,0.4),rgba(0,20,50,0.7));
+  border:1px solid rgba(0,150,255,0.3);border-radius:8px;padding:16px;margin-bottom:16px;
+  position:relative;overflow:hidden;
+}
+.brief::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--blue),var(--cyan),var(--blue));}
+.brief-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.brief-emoji{font-size:28px;}
+.brief-title{font-family:'Orbitron',monospace;font-size:14px;color:var(--cyan);}
+.brief-sub{font-size:12px;color:var(--text2);margin-top:3px;}
+.brief-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.brief-item{display:flex;align-items:center;gap:8px;font-size:13px;}
+.brief-ic{font-size:16px;width:22px;text-align:center;}
+
+/* APP CARDS */
+.app-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+.app-card{
+  background:var(--bg3);border:1px solid var(--border);border-radius:6px;
+  padding:12px;cursor:pointer;transition:all 0.2s;position:relative;
+}
+.app-card:hover{border-color:var(--cyan2);box-shadow:0 0 12px rgba(0,212,255,0.15);}
+.app-card.ok{border-left:3px solid var(--green);}
+.app-card.warn{border-left:3px solid var(--orange);}
+.app-card.down{border-left:3px solid var(--red);}
+.app-dot{width:7px;height:7px;border-radius:50%;position:absolute;top:10px;right:10px;}
+.app-dot.g{background:var(--green);box-shadow:0 0 5px var(--green);animation:pulse 2s infinite;}
+.app-dot.o{background:var(--orange);box-shadow:0 0 5px var(--orange);animation:pulse 1s infinite;}
+.app-dot.r{background:var(--red);box-shadow:0 0 5px var(--red);animation:pulse 0.5s infinite;}
+.app-name{font-size:12px;font-weight:700;margin-bottom:6px;padding-right:14px;}
+.app-m{font-size:10px;color:var(--text2);}
+.app-m span{color:var(--text);font-weight:600;}
+.app-m span.w{color:var(--orange);}
+.app-m span.r{color:var(--red);}
+
+/* INCIDENTS */
+.inc-item{
+  display:flex;gap:10px;padding:11px;border-bottom:1px solid var(--border);
+  cursor:pointer;transition:background 0.2s;
+}
+.inc-item:last-child{border-bottom:none;}
+.inc-item:hover{background:rgba(0,212,255,0.03);}
+.inc-bar{width:3px;border-radius:2px;flex-shrink:0;}
+.inc-bar.c{background:var(--red);box-shadow:0 0 6px var(--red);}
+.inc-bar.h{background:var(--orange);}
+.inc-bar.r{background:var(--green);}
+.inc-body{flex:1;}
+.inc-title{font-size:13px;font-weight:600;margin-bottom:3px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.inc-meta{font-size:11px;color:var(--text2);display:flex;gap:10px;flex-wrap:wrap;}
+.tag{font-size:9px;padding:2px 7px;border-radius:8px;font-weight:700;font-family:'Orbitron',monospace;white-space:nowrap;}
+.tag-c{background:rgba(255,34,68,0.15);color:var(--red);border:1px solid rgba(255,34,68,0.3);}
+.tag-h{background:rgba(255,136,0,0.15);color:var(--orange);border:1px solid rgba(255,136,0,0.3);}
+.tag-r{background:rgba(0,255,136,0.1);color:var(--green);border:1px solid rgba(0,255,136,0.3);}
+.tag-i{background:rgba(0,102,255,0.15);color:#66aaff;border:1px solid rgba(0,102,255,0.3);}
+
+/* SECTION HEADER */
+.sh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.sh-title{font-family:'Orbitron',monospace;font-size:11px;color:var(--cyan);letter-spacing:2px;}
+.sh-act{font-size:11px;color:var(--cyan2);cursor:pointer;padding:3px 10px;border:1px solid var(--border);border-radius:4px;transition:all 0.2s;}
+.sh-act:hover{border-color:var(--cyan2);color:var(--cyan);}
+
+/* PROGRESS */
+.pw{margin-bottom:8px;}
+.ph{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;}
+.pb{height:5px;background:rgba(255,255,255,0.05);border-radius:3px;overflow:hidden;}
+.pf{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--cyan2),var(--cyan));}
+.pf.pw-o{background:linear-gradient(90deg,#cc6600,var(--orange));}
+.pf.pw-r{background:linear-gradient(90deg,#cc0022,var(--red));}
+
+/* CHART */
+.mini-chart{display:flex;align-items:flex-end;gap:2px;height:36px;}
+.mb{flex:1;background:rgba(0,212,255,0.2);border-radius:2px 2px 0 0;}
+.mb.a{background:var(--cyan);}
+.mb.o{background:var(--orange);}
+
+/* BUTTONS */
+.btn{padding:7px 14px;border-radius:4px;border:none;cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;transition:all 0.2s;}
+.btn-p{background:linear-gradient(135deg,var(--blue),var(--cyan2));color:#fff;box-shadow:0 0 10px rgba(0,100,255,0.3);}
+.btn-p:hover{box-shadow:0 0 18px rgba(0,212,255,0.5);}
+.btn-g{background:transparent;color:var(--cyan);border:1px solid var(--cyan2);}
+.btn-g:hover{background:rgba(0,212,255,0.05);}
+.btn-r{background:rgba(255,34,68,0.1);color:var(--red);border:1px solid rgba(255,34,68,0.3);}
+.btn-r:hover{background:rgba(255,34,68,0.2);}
+
+/* CHAT PANEL */
+.chat-panel{display:flex;flex-direction:column;height:100%;}
+.chat-head{
+  padding:14px;border-bottom:1px solid var(--border);
+  background:linear-gradient(180deg,rgba(0,50,100,0.3),transparent);
+  flex-shrink:0;
+}
+.chat-av-wrap{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.chat-av{
+  width:44px;height:44px;border-radius:50%;
+  background:radial-gradient(circle at 30% 30%,#0099ff,#003366);
+  border:2px solid var(--cyan);box-shadow:0 0 20px rgba(0,212,255,0.4);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Orbitron',monospace;font-size:16px;font-weight:900;color:var(--cyan);
+  position:relative;animation:avGlow 3s infinite;
+}
+@keyframes avGlow{0%,100%{box-shadow:0 0 20px rgba(0,212,255,0.4);}50%{box-shadow:0 0 35px rgba(0,212,255,0.7);}}
+.chat-av-ring{position:absolute;inset:-5px;border-radius:50%;border:1px solid rgba(0,212,255,0.3);animation:spin 8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.chat-name{font-family:'Orbitron',monospace;font-size:15px;color:var(--cyan);font-weight:700;}
+.chat-tag{font-size:11px;color:var(--text2);margin-top:2px;}
+.chat-dots{display:flex;gap:10px;flex-wrap:wrap;}
+.cdot{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text2);}
+.cdot-d{width:6px;height:6px;border-radius:50%;}
+
+.chat-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;}
+.msg{display:flex;gap:8px;}
+.msg.u{flex-direction:row-reverse;}
+.msg-av{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;}
+.msg-av.j{background:radial-gradient(circle at 30% 30%,#0099ff,#003366);color:var(--cyan);border:1px solid var(--cyan);font-family:'Orbitron',monospace;}
+.msg-av.v{background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff;}
+.bubble{padding:9px 12px;border-radius:10px;font-size:13px;line-height:1.5;max-width:200px;}
+.msg.j .bubble{background:rgba(0,50,100,0.4);border:1px solid rgba(0,150,255,0.2);border-top-left-radius:3px;color:var(--text);}
+.msg.u .bubble{background:rgba(0,100,255,0.2);border:1px solid rgba(0,100,255,0.3);border-top-right-radius:3px;color:var(--text);}
+.msg-time{font-size:10px;color:var(--text2);margin-top:3px;}
+.typing-wrap{display:flex;gap:8px;}
+.typing{display:flex;align-items:center;gap:4px;padding:9px 12px;background:rgba(0,50,100,0.4);border:1px solid rgba(0,150,255,0.2);border-radius:10px;border-top-left-radius:3px;}
+.td{width:6px;height:6px;border-radius:50%;background:var(--cyan);animation:tb 1s infinite;}
+.td:nth-child(2){animation-delay:0.2s;}
+.td:nth-child(3){animation-delay:0.4s;}
+@keyframes tb{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-6px);}}
+
+.chat-input-area{padding:12px;border-top:1px solid var(--border);flex-shrink:0;}
+.input-wrap{
+  display:flex;gap:8px;align-items:center;
+  background:rgba(255,255,255,0.03);border:1px solid var(--border);
+  border-radius:20px;padding:7px 12px;transition:border-color 0.2s;
+}
+.input-wrap:focus-within{border-color:var(--cyan2);box-shadow:0 0 10px rgba(0,212,255,0.2);}
+.chat-in{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'Rajdhani',sans-serif;font-size:13px;}
+.chat-in::placeholder{color:var(--text2);}
+.ibtn{width:26px;height:26px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all 0.2s;}
+.ibtn-s{background:linear-gradient(135deg,var(--blue),var(--cyan2));color:#fff;}
+.ibtn-s:hover{transform:scale(1.1);}
+.ibtn-v{background:rgba(0,255,136,0.1);color:var(--green);border:1px solid rgba(0,255,136,0.3);}
+.ibtn-v:hover,.ibtn-v.on{background:rgba(0,255,136,0.2);}
+.ibtn-v.on{animation:vp 1s infinite;}
+@keyframes vp{0%,100%{box-shadow:0 0 0 0 rgba(0,255,136,0.4);}50%{box-shadow:0 0 0 6px rgba(0,255,136,0);}}
+.input-hint{text-align:center;font-size:10px;color:var(--text2);font-family:'Orbitron',monospace;letter-spacing:1px;margin-top:7px;}
+
+/* TOASTS */
+.toasts{position:fixed;top:65px;right:14px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+.toast{
+  background:var(--bg3);border-radius:8px;padding:13px 15px;width:310px;
+  pointer-events:all;animation:tIn 0.3s ease;position:relative;overflow:hidden;
+}
+.toast::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;}
+.toast.tc{border:1px solid rgba(255,34,68,0.4);}
+.toast.tc::before{background:var(--red);box-shadow:0 0 8px var(--red);}
+.toast.tw{border:1px solid rgba(255,136,0,0.4);}
+.toast.tw::before{background:var(--orange);}
+.toast.ti{border:1px solid rgba(0,212,255,0.3);}
+.toast.ti::before{background:var(--cyan);}
+.toast.ts{border:1px solid rgba(0,255,136,0.3);}
+.toast.ts::before{background:var(--green);}
+@keyframes tIn{from{transform:translateX(100%);opacity:0;}to{transform:translateX(0);opacity:1;}}
+.t-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px;}
+.t-title{font-size:13px;font-weight:700;padding-right:8px;}
+.t-x{cursor:pointer;color:var(--text2);font-size:15px;line-height:1;flex-shrink:0;}
+.t-x:hover{color:var(--text);}
+.t-body{font-size:12px;color:var(--text2);line-height:1.5;}
+.t-acts{display:flex;gap:8px;margin-top:10px;}
+.t-yes{flex:1;padding:6px;border-radius:4px;border:none;cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;background:rgba(0,255,136,0.15);color:var(--green);border:1px solid rgba(0,255,136,0.3);transition:all 0.2s;}
+.t-yes:hover{background:rgba(0,255,136,0.25);}
+.t-no{flex:1;padding:6px;border-radius:4px;border:none;cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;background:rgba(255,34,68,0.1);color:var(--red);border:1px solid rgba(255,34,68,0.2);transition:all 0.2s;}
+.t-no:hover{background:rgba(255,34,68,0.2);}
+.t-snooze{flex:1;padding:6px;border-radius:4px;border:none;cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;background:rgba(255,204,0,0.08);color:var(--yellow);border:1px solid rgba(255,204,0,0.2);transition:all 0.2s;}
+.t-snooze:hover{background:rgba(255,204,0,0.15);}
+.conf-bar-wrap{margin:8px 0 4px;}
+.conf-bar-track{height:5px;background:rgba(255,255,255,0.05);border-radius:3px;overflow:hidden;margin-bottom:3px;}
+.conf-bar-fill{height:100%;border-radius:3px;transition:width 0.6s;}
+
+/* WAKE MODAL */
+#wakeModal{display:none;position:fixed;inset:0;z-index:9999;background:rgba(2,11,24,0.92);backdrop-filter:blur(6px);align-items:center;justify-content:center;flex-direction:column;gap:24px;}
+#wakeModal.on{display:flex;}
+.wake-ring-wrap{position:relative;width:160px;height:160px;display:flex;align-items:center;justify-content:center;}
+.wake-circle{
+  width:140px;height:140px;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,212,255,0.15),transparent);
+  border:2px solid var(--cyan);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Orbitron',monospace;font-size:32px;font-weight:900;color:var(--cyan);
+  text-shadow:0 0 20px var(--cyan);animation:wg 2s infinite;
+}
+@keyframes wg{0%,100%{box-shadow:0 0 30px rgba(0,212,255,0.4);}50%{box-shadow:0 0 60px rgba(0,212,255,0.7),0 0 100px rgba(0,100,255,0.3);}}
+.wr1{position:absolute;inset:-10px;border-radius:50%;border:1px solid rgba(0,212,255,0.3);animation:spin 4s linear infinite;}
+.wr2{position:absolute;inset:-22px;border-radius:50%;border:1px dashed rgba(0,212,255,0.15);animation:spin 8s linear infinite reverse;}
+.wake-text{font-family:'Orbitron',monospace;font-size:16px;color:var(--cyan);letter-spacing:4px;}
+.wake-sub{font-size:12px;color:var(--text2);}
+.wake-bars{display:flex;align-items:center;gap:3px;height:36px;}
+.wb{width:4px;background:var(--cyan);border-radius:2px;animation:tb 0.7s infinite;}
+.wb:nth-child(1){height:8px;animation-delay:0s;}
+.wb:nth-child(2){height:18px;animation-delay:0.08s;}
+.wb:nth-child(3){height:30px;animation-delay:0.16s;}
+.wb:nth-child(4){height:22px;animation-delay:0.24s;}
+.wb:nth-child(5){height:36px;animation-delay:0.32s;}
+.wb:nth-child(6){height:22px;animation-delay:0.40s;}
+.wb:nth-child(7){height:30px;animation-delay:0.48s;}
+.wb:nth-child(8){height:16px;animation-delay:0.56s;}
+.wb:nth-child(9){height:8px;animation-delay:0.64s;}
+.wake-close-btn{padding:8px 24px;border-radius:4px;cursor:pointer;background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--text2);font-family:'Rajdhani',sans-serif;font-size:13px;transition:all 0.2s;}
+.wake-close-btn:hover{border-color:var(--red);color:var(--red);}
+
+/* SCAN LINE */
+.scan{position:fixed;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:0.2;pointer-events:none;animation:scanMove 5s linear infinite;}
+@keyframes scanMove{0%{transform:translateY(0);}100%{transform:translateY(100vh);}}
+
+/* TABS */
+.page-tab-bar{display:flex;gap:4px;margin-bottom:16px;}
+.ptab{padding:6px 14px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;border:1px solid var(--border);color:var(--text2);transition:all 0.2s;}
+.ptab:hover{border-color:var(--cyan2);color:var(--cyan);}
+.ptab.on{background:rgba(0,212,255,0.08);border-color:var(--cyan);color:var(--cyan);}
+
+/* ADMIN PANEL */
+.admin-row{display:flex;align-items:center;gap:12px;padding:10px;border:1px solid var(--border);border-radius:6px;margin-bottom:8px;background:rgba(255,255,255,0.01);}
+.admin-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;}
+.admin-info{flex:1;}
+.admin-name{font-size:13px;font-weight:700;}
+.admin-role-tag{font-size:10px;padding:2px 8px;border-radius:8px;font-family:'Orbitron',monospace;}
+.rt-admin{background:rgba(0,100,255,0.2);color:var(--cyan);border:1px solid rgba(0,100,255,0.3);}
+.rt-dev{background:rgba(0,150,200,0.15);color:#88ccff;border:1px solid rgba(0,150,200,0.3);}
+.rt-mkt{background:rgba(150,0,200,0.15);color:#cc88ff;border:1px solid rgba(150,0,200,0.3);}
+.rt-ops{background:rgba(0,150,80,0.15);color:#88ffbb;border:1px solid rgba(0,150,80,0.3);}
+.rt-ceo{background:rgba(200,100,0,0.15);color:#ffbb66;border:1px solid rgba(200,100,0,0.3);}
+.admin-apps{font-size:11px;color:var(--text2);margin-top:2px;}
+</style>
+</head>
+<body>
+<div class="scan"></div>
+
+<!-- --- SETUP SCREEN &middot; STEP 1: SELECT NAME --- -->
+<div id="setupScreen">
+  <div class="setup-logo">M<span style="color:var(--blue)">A</span>X</div>
+  <div class="setup-sub">ENTERPRISE AI ASSISTANT</div>
+
+  <!-- STEP 1: Name list -->
+  <div class="setup-card" id="step1">
+    <div class="setup-title">WHO ARE YOU?</div>
+    <div class="setup-hint">Names loaded from MAX DB &middot; Select yours to receive OTP</div>
+
+    <!-- loading state -->
+    <div id="dbLoading" style="text-align:center;padding:20px 0;">
+      <div style="display:flex;justify-content:center;gap:6px;margin-bottom:10px;">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--cyan);animation:tb 0.8s infinite;"></div>
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--cyan);animation:tb 0.8s 0.15s infinite;"></div>
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--cyan);animation:tb 0.8s 0.3s infinite;"></div>
+      </div>
+      <div style="font-size:11px;color:var(--text2);font-family:'Orbitron',monospace;letter-spacing:1px;">FETCHING USERS FROM DB...</div>
+    </div>
+
+    <!-- user list (shown after "DB fetch") -->
+    <div id="userList" style="display:none;">
+      <button class="user-btn admin-btn" onclick="selectUser('venkatesh','v*****h@gmail.com','SUPER ADMIN')">
+        <div class="user-avatar av-admin">V</div>
+        <div class="user-info">
+          <div class="name">Venkatesh N</div>
+          <div class="role">Super Admin &middot; All Applications</div>
+        </div>
+        <div style="font-size:10px;color:var(--cyan2);margin-left:auto;white-space:nowrap;">OTP &#x2192;</div>
+      </button>
+      <button class="user-btn" onclick="selectUser('dev','r*****r@gmail.com','DEVELOPER')">
+        <div class="user-avatar av-dev">R</div>
+        <div class="user-info">
+          <div class="name">Ravi Kumar</div>
+          <div class="role">Developer &middot; SRJ &amp; Auth Service</div>
+        </div>
+        <div style="font-size:10px;color:var(--cyan2);margin-left:auto;white-space:nowrap;">OTP &#x2192;</div>
+      </button>
+      <button class="user-btn" onclick="selectUser('mkt','s*****m@gmail.com','MARKETING')">
+        <div class="user-avatar av-mkt">S</div>
+        <div class="user-info">
+          <div class="name">Sneha M</div>
+          <div class="role">Marketing &middot; CRM &amp; Campaigns</div>
+        </div>
+        <div style="font-size:10px;color:var(--cyan2);margin-left:auto;white-space:nowrap;">OTP &#x2192;</div>
+      </button>
+      <button class="user-btn" onclick="selectUser('ops','a*****s@gmail.com','OPERATIONS')">
+        <div class="user-avatar av-ops">A</div>
+        <div class="user-info">
+          <div class="name">Arun S</div>
+          <div class="role">Operations &middot; Status View Only</div>
+        </div>
+        <div style="font-size:10px;color:var(--cyan2);margin-left:auto;white-space:nowrap;">OTP &#x2192;</div>
+      </button>
+      <button class="user-btn" onclick="selectUser('ceo','k*****n@gmail.com','EXECUTIVE')">
+        <div class="user-avatar av-ceo">K</div>
+        <div class="user-info">
+          <div class="name">Kiran (CEO)</div>
+          <div class="role">Executive &middot; Business Reports</div>
+        </div>
+        <div style="font-size:10px;color:var(--cyan2);margin-left:auto;white-space:nowrap;">OTP &#x2192;</div>
+      </button>
+      <div style="text-align:center;margin-top:14px;font-size:10px;color:var(--text2);display:flex;align-items:center;justify-content:center;gap:6px;">
+        <div style="width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;"></div>
+        5 active users &middot; MAX DB connected
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: OTP Entry -->
+  <div class="setup-card" id="step2" style="display:none;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div id="otpAvatar" class="user-avatar av-admin" style="width:52px;height:52px;font-size:18px;margin:0 auto 12px;"></div>
+      <div id="otpName" style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;"></div>
+      <div id="otpRoleLabel" style="font-size:10px;font-family:'Orbitron',monospace;letter-spacing:1px;color:var(--cyan);margin-bottom:16px;"></div>
+    </div>
+
+    <div style="background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.2);border-radius:6px;padding:12px;text-align:center;margin-bottom:20px;">
+      <div style="font-size:12px;color:var(--green);margin-bottom:3px;">OTP sent to</div>
+      <div id="otpEmail" style="font-size:14px;font-weight:700;color:var(--text);"></div>
+      <div id="otpTimer" style="font-size:11px;color:var(--text2);margin-top:4px;">Valid for <span id="timerVal" style="color:var(--yellow);">5:00</span></div>
+    </div>
+
+    <div class="setup-title" style="margin-bottom:12px;">ENTER 6-DIGIT OTP</div>
+    <div style="display:flex;justify-content:center;gap:8px;margin-bottom:16px;" id="otpBoxes">
+      <input class="otp-box" maxlength="1" oninput="otpInput(this,0)" onkeydown="otpKey(event,0)"/>
+      <input class="otp-box" maxlength="1" oninput="otpInput(this,1)" onkeydown="otpKey(event,1)"/>
+      <input class="otp-box" maxlength="1" oninput="otpInput(this,2)" onkeydown="otpKey(event,2)"/>
+      <input class="otp-box" maxlength="1" oninput="otpInput(this,3)" onkeydown="otpKey(event,3)"/>
+      <input class="otp-box" maxlength="1" oninput="otpInput(this,4)" onkeydown="otpKey(event,4)"/>
+      <input class="otp-box" maxlength="1" oninput="otpInput(this,5)" onkeydown="otpKey(event,5)"/>
+    </div>
+
+    <div id="otpError" style="text-align:center;font-size:12px;color:var(--red);height:18px;margin-bottom:8px;"></div>
+    <div id="otpAttempts" style="text-align:center;font-size:11px;color:var(--text2);margin-bottom:14px;">3 attempts remaining</div>
+
+    <button class="btn btn-p" style="width:100%;padding:12px;" onclick="verifyOTP()">VERIFY &amp; LOGIN</button>
+    <div style="text-align:center;margin-top:12px;display:flex;justify-content:center;gap:20px;">
+      <span id="resendBtn" style="font-size:12px;color:var(--cyan2);cursor:pointer;" onclick="resendOTP()">Resend OTP</span>
+      <span style="font-size:12px;color:var(--text2);cursor:pointer;" onclick="backToNames()">&#x2190; Back</span>
+    </div>
+  </div>
+
+  <!-- STEP 3: Verifying -->
+  <div class="setup-card" id="step3" style="display:none;text-align:center;padding:40px;">
+    <div style="font-size:40px;margin-bottom:16px;animation:avatarGlow 1s infinite;">?</div>
+    <div style="font-family:'Orbitron',monospace;font-size:14px;color:var(--green);letter-spacing:2px;margin-bottom:8px;">OTP VERIFIED</div>
+    <div id="step3Name" style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px;"></div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:20px;">Loading your personalised MAX...</div>
+    <div style="display:flex;justify-content:center;gap:6px;">
+      <div style="width:8px;height:8px;border-radius:50%;background:var(--cyan);animation:tb 0.6s infinite;"></div>
+      <div style="width:8px;height:8px;border-radius:50%;background:var(--cyan);animation:tb 0.6s 0.15s infinite;"></div>
+      <div style="width:8px;height:8px;border-radius:50%;background:var(--cyan);animation:tb 0.6s 0.3s infinite;"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- --- MAIN APP --- -->
+<div id="mainApp">
+
+  <!-- TOPNAV -->
+  <nav class="topnav">
+    <div class="nav-left">
+      <div class="logo">M<span>A</span>X</div>
+      <div class="nav-badge"><div class="pulse"></div>ALL SYSTEMS LIVE</div>
+    </div>
+    <div class="nav-right">
+      <div class="nav-clock" id="clock">00:00:00</div>
+      <div class="nav-user">
+        <div class="nav-av">V</div>
+        <div>
+          <div class="nav-name">Venkatesh N</div>
+          <div class="nav-role">SUPER ADMIN</div>
+        </div>
+      </div>
+      <button class="hey-btn" onclick="openWake()">&#x1F3A4; Hey MAX</button>
+    </div>
+  </nav>
+
+  <!-- LAYOUT -->
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sb-label">My Overview</div>
+      <div class="sb-item active" onclick="showTab('dash',this)"><span class="sb-icon">&#x2713;</span>Dashboard</div>
+      <div class="sb-item" onclick="showTab('apps',this)"><span class="sb-icon">&#x2713;</span>Applications<span class="sb-badge orange">1</span></div>
+
+      <div class="sb-divider"></div>
+      <div class="sb-label">Monitoring</div>
+      <div class="sb-item" onclick="showTab('incidents',this)"><span class="sb-icon">&#x2713;</span>Incidents<span class="sb-badge red">2</span></div>
+      <div class="sb-item" onclick="showTab('dash',this)"><span class="sb-icon">&#x2713;</span>Metrics</div>
+      <div class="sb-item" onclick="showTab('dash',this)"><span class="sb-icon">&#x2713;</span>Logs</div>
+
+      <div class="sb-divider"></div>
+      <div class="sb-label">Business AI</div>
+      <div class="sb-item" onclick="showTab('business',this)"><span class="sb-icon">&#x2713;</span>Job Postings</div>
+      <div class="sb-item" onclick="showTab('business',this)"><span class="sb-icon">&#x2713;</span>Candidates<span class="sb-badge green">47</span></div>
+      <div class="sb-item" onclick="showTab('business',this)"><span class="sb-icon">&#x2713;</span>Interviews</div>
+
+      <div class="sb-divider"></div>
+      <div class="sb-label">Admin Only</div>
+      <div class="sb-item" onclick="showTab('admin',this)"><span class="sb-icon">&#x2713;</span>User Management</div>
+      <div class="sb-item" onclick="showTab('admin',this)"><span class="sb-icon">&#x2713;</span>Audit Log</div>
+      <div class="sb-item" onclick="showTab('business',this)"><span class="sb-icon">&#x2713;</span>Reports</div>
+
+      <div style="padding:14px;margin-top:8px;border-top:1px solid var(--border);">
+        <div class="card-title" style="margin-bottom:8px;">Infrastructure</div>
+        <div class="pw"><div class="ph"><span style="font-size:10px;color:var(--text2)">AI Workers</span><span style="font-size:10px;color:var(--green)">3/3</span></div><div class="pb"><div class="pf" style="width:100%"></div></div></div>
+        <div class="pw"><div class="ph"><span style="font-size:10px;color:var(--text2)">Kafka</span><span style="font-size:10px;color:var(--green)">OK</span></div><div class="pb"><div class="pf" style="width:100%"></div></div></div>
+        <div class="pw"><div class="ph"><span style="font-size:10px;color:var(--text2)">PostgreSQL</span><span style="font-size:10px;color:var(--green)">OK</span></div><div class="pb"><div class="pf" style="width:100%"></div></div></div>
+        <div class="pw"><div class="ph"><span style="font-size:10px;color:var(--text2)">Redis</span><span style="font-size:10px;color:var(--green)">OK</span></div><div class="pb"><div class="pf" style="width:100%"></div></div></div>
+        <div class="pw"><div class="ph"><span style="font-size:10px;color:var(--text2)">Server CPU</span><span style="font-size:10px;color:var(--cyan)">44%</span></div><div class="pb"><div class="pf" style="width:44%"></div></div></div>
+        <div class="pw"><div class="ph"><span style="font-size:10px;color:var(--text2)">Server RAM</span><span style="font-size:10px;color:var(--cyan)">61%</span></div><div class="pb"><div class="pf" style="width:61%"></div></div></div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+
+      <!-- DASHBOARD TAB -->
+      <div id="tab-dash">
+        <!-- Brief -->
+        <div class="brief">
+          <div class="brief-head">
+            <div class="brief-emoji">&#x1F4CB;</div>
+            <div>
+              <div class="brief-title">Good Morning, Venkatesh</div>
+              <div class="brief-sub">Enterprise Summary - June 11, 2026 &middot; Super Admin View</div>
+            </div>
+          </div>
+          <div class="brief-grid">
+            <div class="brief-item"><span class="brief-ic">&#x2713;</span>2 critical incidents resolved overnight</div>
+            <div class="brief-item"><span class="brief-ic">&#x2713;</span>12 interviews scheduled today</div>
+            <div class="brief-item"><span class="brief-ic">&#x2713;</span>5 candidates accepted offers</div>
+            <div class="brief-item"><span class="brief-ic">&#x2713;</span>3 job postings expire this week</div>
+            <div class="brief-item"><span class="brief-ic">&#x2713;</span>Revenue target at 82%</div>
+            <div class="brief-item"><span class="brief-ic">&#x2713;</span>1 database needs maintenance</div>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="g4">
+          <div class="stat s-green"><div class="stat-label">Apps Online</div><div class="stat-val gv">11<span style="font-size:14px;color:var(--text2)">/12</span></div><div class="stat-sub">1 in warning state</div></div>
+          <div class="stat s-red"><div class="stat-label">Active Incidents</div><div class="stat-val rv">2</div><div class="stat-sub">1 critical &middot; 1 high</div></div>
+          <div class="stat"><div class="stat-label">Avg Response</div><div class="stat-val cv" style="font-size:20px">118<span style="font-size:12px;color:var(--text2)">ms</span></div><div class="stat-sub" style="color:var(--green)">&#x26A0; Normal</div></div>
+          <div class="stat s-orange"><div class="stat-label">PG Memory</div><div class="stat-val ov" style="font-size:22px">88<span style="font-size:12px">%</span></div><div class="stat-sub" style="color:var(--orange)">&#x26A0; Action needed</div></div>
+        </div>
+
+        <!-- Apps -->
+        <div class="sh"><div class="sh-title">Application Health &middot; All 12</div><div class="sh-act" onclick="showTab('apps',null)">View All ?</div></div>
+        <div class="app-grid">
+          <div class="app-card ok"><div class="app-dot g"></div><div class="app-name">SRJ &middot; Recruitment</div><div class="app-m">CPU <span>23%</span> &middot; MEM <span>41%</span> &middot; <span>95ms</span></div></div>
+          <div class="app-card warn" onclick="showToast('tw','&#x26A0; PG Service Memory','Memory at 88%. Predicted failure ~12 min. Recommend scaling. Approve?',true)"><div class="app-dot o"></div><div class="app-name">PG &middot; Payroll</div><div class="app-m">CPU <span>61%</span> &middot; MEM <span class="w">88%</span> &middot; <span class="w">340ms</span></div></div>
+          <div class="app-card ok"><div class="app-dot g"></div><div class="app-name">CRM Platform</div><div class="app-m">CPU <span>18%</span> &middot; MEM <span>34%</span> &middot; <span>78ms</span></div></div>
+          <div class="app-card down" onclick="showToast('tc','&#x1F534; Notification Service DOWN','DB connection pool exhausted. Ready to restart + increase pool to 100. Approve?',true)"><div class="app-dot r"></div><div class="app-name">Notification Svc</div><div class="app-m">CPU <span class="r">N/A</span> &middot; MEM <span class="r">DOWN</span></div></div>
+          <div class="app-card ok"><div class="app-dot g"></div><div class="app-name">Auth Service</div><div class="app-m">CPU <span>12%</span> &middot; MEM <span>28%</span> &middot; <span>45ms</span></div></div>
+          <div class="app-card ok"><div class="app-dot g"></div><div class="app-name">API Gateway</div><div class="app-m">CPU <span>44%</span> &middot; MEM <span>48%</span> &middot; <span>22ms</span></div></div>
+          <div class="app-card ok"><div class="app-dot g"></div><div class="app-name">Email Gateway</div><div class="app-m">CPU <span>5%</span> &middot; MEM <span>19%</span> &middot; <span>88ms</span></div></div>
+          <div class="app-card ok"><div class="app-dot g"></div><div class="app-name">File Storage</div><div class="app-m">CPU <span>8%</span> &middot; MEM <span>22%</span> &middot; <span>112ms</span></div></div>
+          <div class="app-card ok"><div class="app-dot g"></div><div class="app-name">Report Engine</div><div class="app-m">CPU <span>31%</span> &middot; MEM <span>55%</span> &middot; <span>203ms</span></div></div>
+          <div class="app-card ok"><div class="app-dot g"></div><div class="app-name">Interview Scheduler</div><div class="app-m">CPU <span>9%</span> &middot; MEM <span>31%</span> &middot; <span>67ms</span></div></div>
+          <div class="app-card ok"><div class="app-dot g"></div><div class="app-name">Resume Parser</div><div class="app-m">CPU <span>27%</span> &middot; MEM <span>43%</span> &middot; <span>156ms</span></div></div>
+          <div class="app-card ok"><div class="app-dot g"></div><div class="app-name">Analytics</div><div class="app-m">CPU <span>15%</span> &middot; MEM <span>37%</span> &middot; <span>134ms</span></div></div>
+        </div>
+
+        <!-- Incidents -->
+        <div class="sh"><div class="sh-title">Active Incidents</div><div class="sh-act" onclick="showTab('incidents',null)">View All ?</div></div>
+        <div class="card" style="padding:0;overflow:hidden;">
+
+          <!-- INC-2041: Critical with confidence score + escalation timer -->
+          <div class="inc-item" id="inc2041">
+            <div class="inc-bar c"></div>
+            <div class="inc-body" style="flex:1">
+              <div class="inc-title">Notification Service is DOWN <span class="tag tag-c">CRITICAL</span><span class="tag tag-i">L2 APPROVAL REQUIRED</span></div>
+              <div class="inc-meta"><span>2 mins ago</span><span>DB pool exhausted (50/50)</span><span>INC-2041</span></div>
+              <!-- Confidence Score -->
+              <div style="margin-top:8px;padding:8px;background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.15);border-radius:4px;">
+                <div style="font-size:10px;font-family:'Orbitron',monospace;color:var(--cyan);letter-spacing:1px;margin-bottom:6px;">MAX CONFIDENCE ANALYSIS</div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                  <div style="flex:1;height:6px;background:rgba(255,255,255,0.05);border-radius:3px;overflow:hidden;"><div style="width:94%;height:100%;background:linear-gradient(90deg,var(--green),#00ff44);border-radius:3px;"></div></div>
+                  <span style="font-size:12px;font-weight:700;color:var(--green);font-family:'Orbitron',monospace;">94%</span>
+                </div>
+                <div style="font-size:11px;color:var(--text2);">Root cause: DB connection pool exhausted. Recommended fix: restart service + increase pool to 100. High confidence &middot; same pattern resolved INC-1988.</div>
+              </div>
+              <!-- Escalation Timer -->
+              <div style="margin-top:6px;display:flex;align-items:center;gap:6px;font-size:11px;color:var(--orange);">
+                <span style="animation:pulse 1s infinite;">&#x2713;</span> No approval in <span id="escTimer" style="font-family:'Orbitron',monospace;color:var(--red);">4:47</span> ? escalates to <strong>Backup Admin</strong>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+              <button class="btn btn-p" style="font-size:11px;padding:5px 10px;" onclick="approveAction('inc2041','Notification Service restart + pool?100','INC-2041')">&#x2713; Approve</button>
+              <button class="btn btn-r" style="font-size:11px;padding:5px 10px;" onclick="denyAction('inc2041')">&#x2717; Deny</button>
+              <button class="btn btn-g" style="font-size:11px;padding:5px 10px;" onclick="snoozeInc('inc2041')">Snooze</button>
+            </div>
+          </div>
+
+          <!-- INC-2040: High with lower confidence -->
+          <div class="inc-item" id="inc2040">
+            <div class="inc-bar h"></div>
+            <div class="inc-body" style="flex:1">
+              <div class="inc-title">PG Service memory 88% - failure predicted <span class="tag tag-h">HIGH</span><span class="tag tag-i">L1 REVIEW</span></div>
+              <div class="inc-meta"><span>8 mins ago</span><span>~12 min to critical threshold</span><span>INC-2040</span></div>
+              <div style="margin-top:8px;padding:8px;background:rgba(255,136,0,0.06);border:1px solid rgba(255,136,0,0.2);border-radius:4px;">
+                <div style="font-size:10px;font-family:'Orbitron',monospace;color:var(--orange);letter-spacing:1px;margin-bottom:6px;">MAX CONFIDENCE ANALYSIS</div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                  <div style="flex:1;height:6px;background:rgba(255,255,255,0.05);border-radius:3px;overflow:hidden;"><div style="width:67%;height:100%;background:linear-gradient(90deg,#cc6600,var(--orange));border-radius:3px;"></div></div>
+                  <span style="font-size:12px;font-weight:700;color:var(--orange);font-family:'Orbitron',monospace;">67%</span>
+                </div>
+                <div style="font-size:11px;color:var(--text2);">Memory rising &middot; possibly leak or load spike. Medium confidence. Recommend manual log review before scaling. Two possible causes identified.</div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+              <button class="btn btn-p" style="font-size:11px;padding:5px 10px;" onclick="approveAction('inc2040','Scale PG service memory','INC-2040')">&#x2713; Approve</button>
+              <button class="btn btn-g" style="font-size:11px;padding:5px 10px;" onclick="snoozeInc('inc2040')">Snooze</button>
+            </div>
+          </div>
+
+          <!-- Resolved with rollback available -->
+          <div class="inc-item" id="inc2039" style="opacity:0.75;">
+            <div class="inc-bar r"></div>
+            <div class="inc-body" style="flex:1">
+              <div class="inc-title">SRJ slow queries &middot; CandidateSkills index <span class="tag tag-r">RESOLVED</span></div>
+              <div class="inc-meta"><span>2 hrs ago</span><span>Approved by Venkatesh &middot; resolved in 4 min</span><span>INC-2039</span></div>
+              <div style="margin-top:5px;font-size:11px;color:var(--text2);padding:5px 8px;background:rgba(0,255,136,0.04);border-radius:4px;border:1px solid rgba(0,255,136,0.1);"> Pre-action snapshot saved &middot; Rollback available for 24h</div>
+            </div>
+            <button class="btn btn-r" style="font-size:11px;padding:5px 10px;" onclick="rollbackAction('INC-2039','index drop on CandidateSkills')">&#x21A9; Rollback</button>
+          </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="g2">
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-title">SRJ Response Time (last 12 readings)</div>
+            <div class="mini-chart">
+              <div class="mb" style="height:40%"></div><div class="mb" style="height:55%"></div><div class="mb" style="height:45%"></div><div class="mb" style="height:62%"></div><div class="mb" style="height:50%"></div><div class="mb" style="height:70%"></div><div class="mb" style="height:52%"></div><div class="mb" style="height:48%"></div><div class="mb" style="height:54%"></div><div class="mb" style="height:44%"></div><div class="mb" style="height:50%"></div><div class="mb a" style="height:58%"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:10px;color:var(--text2)"><span>Avg: 95ms</span><span>Peak: 134ms</span><span style="color:var(--green)">&#x26A0; Normal</span></div>
+          </div>
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-title">PG Memory &middot; Trending Up ?</div>
+            <div class="mini-chart">
+              <div class="mb o" style="height:60%;background:rgba(255,136,0,0.2)"></div><div class="mb o" style="height:63%;background:rgba(255,136,0,0.25)"></div><div class="mb o" style="height:66%;background:rgba(255,136,0,0.3)"></div><div class="mb o" style="height:69%;background:rgba(255,136,0,0.35)"></div><div class="mb o" style="height:72%;background:rgba(255,136,0,0.4)"></div><div class="mb o" style="height:75%;background:rgba(255,136,0,0.5)"></div><div class="mb o" style="height:78%;background:rgba(255,136,0,0.55)"></div><div class="mb o" style="height:81%;background:rgba(255,136,0,0.6)"></div><div class="mb o" style="height:84%;background:rgba(255,136,0,0.7)"></div><div class="mb o" style="height:86%;background:rgba(255,136,0,0.8)"></div><div class="mb o" style="height:87%;background:rgba(255,136,0,0.9)"></div><div class="mb o" style="height:88%"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:10px;color:var(--text2)"><span>Current: 88%</span><span>Trend: ? Rising</span><span style="color:var(--orange)">Act now</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INCIDENTS TAB -->
+      <div id="tab-incidents" style="display:none">
+        <div class="sh"><div class="sh-title">All Incidents</div></div>
+        <!-- Approval Level Legend -->
+        <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+          <div style="padding:4px 10px;border-radius:4px;font-size:10px;font-family:'Orbitron',monospace;background:rgba(255,34,68,0.1);border:1px solid rgba(255,34,68,0.3);color:var(--red);">L2 = Admin/Senior &middot; destructive actions</div>
+          <div style="padding:4px 10px;border-radius:4px;font-size:10px;font-family:'Orbitron',monospace;background:rgba(255,136,0,0.1);border:1px solid rgba(255,136,0,0.3);color:var(--orange);">L1 = Tech Lead &middot; safe restarts</div>
+          <div style="padding:4px 10px;border-radius:4px;font-size:10px;font-family:'Orbitron',monospace;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);color:var(--cyan);">L0 = Any member &middot; read-only</div>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden;">
+          <div class="inc-item"><div class="inc-bar c"></div><div class="inc-body"><div class="inc-title">Notification Service DOWN &middot; DB pool exhausted <span class="tag tag-c">CRITICAL</span><span class="tag tag-i">L2 REQUIRED</span></div><div class="inc-meta"><span>INC-2041</span><span>2 min ago</span><span style="color:var(--green)">Confidence: 94%</span></div></div><button class="btn btn-p" style="font-size:11px;padding:5px 10px;" onclick="approveAction('inc2041tab','Restart + pool?100','INC-2041')">&#x2713; Approve</button></div>
+          <div class="inc-item"><div class="inc-bar h"></div><div class="inc-body"><div class="inc-title">PG Memory at 88% &middot; failure predicted <span class="tag tag-h">HIGH</span><span class="tag tag-i">L1 REVIEW</span></div><div class="inc-meta"><span>INC-2040</span><span>8 min ago</span><span style="color:var(--orange)">Confidence: 67% &middot; review logs first</span></div></div><button class="btn btn-g" style="font-size:11px;padding:5px 10px;" onclick="approveAction('inc2040tab','Scale PG memory','INC-2040')">Review</button></div>
+          <div class="inc-item" style="opacity:0.6"><div class="inc-bar r"></div><div class="inc-body"><div class="inc-title">SRJ slow queries &middot; CandidateSkills index <span class="tag tag-r">RESOLVED</span></div><div class="inc-meta"><span>INC-2039</span><span>2 hrs ago</span><span>Approved by Venkatesh N &middot; Chrome/Windows &middot; 10:16 AM</span></div></div><button class="btn btn-r" style="font-size:11px;padding:5px 10px;" onclick="rollbackAction('INC-2039','index drop')">&#x21A9; Rollback</button></div>
+          <div class="inc-item" style="opacity:0.6"><div class="inc-bar r"></div><div class="inc-body"><div class="inc-title">Recruitment API timeout &middot; overnight <span class="tag tag-r">RESOLVED</span></div><div class="inc-meta"><span>INC-2038</span><span>8 hrs ago</span><span>Approved by Venkatesh N &middot; Mobile &middot; 2:14 AM</span></div></div></div>
+        </div>
+      </div>
+
+      <!-- APPS TAB -->
+      <div id="tab-apps" style="display:none">
+        <div class="sh"><div class="sh-title">All Applications (12) &middot; Admin View</div></div>
+        <div class="card">
+          <div class="card-title">Resource Usage</div>
+          <div class="pw"><div class="ph"><span>SRJ &middot; Recruitment</span><span style="color:var(--green)">CPU 23% &middot; MEM 41% &middot; 95ms</span></div><div class="pb"><div class="pf" style="width:23%"></div></div></div>
+          <div class="pw"><div class="ph"><span>PG &middot; Payroll</span><span style="color:var(--orange)">CPU 61% &middot; MEM 88% &middot; 340ms &#x2713;</span></div><div class="pb"><div class="pf pw-o" style="width:88%"></div></div></div>
+          <div class="pw"><div class="ph"><span>CRM Platform</span><span style="color:var(--green)">CPU 18% &middot; MEM 34% &middot; 78ms</span></div><div class="pb"><div class="pf" style="width:18%"></div></div></div>
+          <div class="pw"><div class="ph"><span>Notification Service</span><span style="color:var(--red)">DOWN &#x2713;</span></div><div class="pb"><div class="pf pw-r" style="width:100%"></div></div></div>
+          <div class="pw"><div class="ph"><span>Auth Service</span><span style="color:var(--green)">CPU 12% &middot; MEM 28% &middot; 45ms</span></div><div class="pb"><div class="pf" style="width:12%"></div></div></div>
+          <div class="pw"><div class="ph"><span>API Gateway</span><span style="color:var(--green)">CPU 44% &middot; MEM 48% &middot; 22ms</span></div><div class="pb"><div class="pf" style="width:44%"></div></div></div>
+          <div class="pw"><div class="ph"><span>Email Gateway</span><span style="color:var(--green)">CPU 5% &middot; MEM 19% &middot; 88ms</span></div><div class="pb"><div class="pf" style="width:5%"></div></div></div>
+          <div class="pw"><div class="ph"><span>File Storage</span><span style="color:var(--green)">CPU 8% &middot; MEM 22% &middot; 112ms</span></div><div class="pb"><div class="pf" style="width:8%"></div></div></div>
+          <div class="pw"><div class="ph"><span>Report Engine</span><span style="color:var(--green)">CPU 31% &middot; MEM 55% &middot; 203ms</span></div><div class="pb"><div class="pf" style="width:31%"></div></div></div>
+          <div class="pw"><div class="ph"><span>Interview Scheduler</span><span style="color:var(--green)">CPU 9% &middot; MEM 31% &middot; 67ms</span></div><div class="pb"><div class="pf" style="width:9%"></div></div></div>
+          <div class="pw"><div class="ph"><span>Resume Parser</span><span style="color:var(--green)">CPU 27% &middot; MEM 43% &middot; 156ms</span></div><div class="pb"><div class="pf" style="width:27%"></div></div></div>
+          <div class="pw"><div class="ph"><span>Analytics Dashboard</span><span style="color:var(--green)">CPU 15% &middot; MEM 37% &middot; 134ms</span></div><div class="pb"><div class="pf" style="width:15%"></div></div></div>
+        </div>
+      </div>
+
+      <!-- BUSINESS TAB -->
+      <div id="tab-business" style="display:none">
+        <div class="sh"><div class="sh-title">Business AI &middot; Admin View</div></div>
+        <div class="g3">
+          <div class="stat"><div class="stat-label">Active Job Postings</div><div class="stat-val cv" style="font-size:20px">14</div><div class="stat-sub" style="color:var(--orange)">3 expiring soon</div></div>
+          <div class="stat s-green"><div class="stat-label">Candidates Pipeline</div><div class="stat-val gv" style="font-size:20px">47</div><div class="stat-sub">Java:23 &middot; React:14 &middot; Other:10</div></div>
+          <div class="stat"><div class="stat-label">Interviews Today</div><div class="stat-val cv" style="font-size:20px">12</div><div class="stat-sub">5 done &middot; 7 upcoming</div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Recent MAX Business Actions</div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;gap:10px;padding:10px;background:rgba(0,255,136,0.05);border-radius:4px;border:1px solid rgba(0,255,136,0.1);align-items:flex-start;">
+              <span style="font-size:18px;">&#x2713;</span>
+              <div><div style="font-size:13px;font-weight:700;">Java Developer job posting created</div><div style="font-size:11px;color:var(--text2);">Used March template &middot; 5 yrs &middot; Bangalore &middot; Approved by Venkatesh &middot; 10:32 AM</div></div>
+            </div>
+            <div style="display:flex;gap:10px;padding:10px;background:rgba(0,212,255,0.05);border-radius:4px;border:1px solid rgba(0,212,255,0.1);align-items:flex-start;">
+              <span style="font-size:18px;">&#x2713;</span>
+              <div><div style="font-size:13px;font-weight:700;">Interview invitations sent &middot; 10 candidates</div><div style="font-size:11px;color:var(--text2);">React Developer role &middot; Ranked by score &middot; Approved by Venkatesh &middot; 9:15 AM</div></div>
+            </div>
+            <div style="display:flex;gap:10px;padding:10px;background:rgba(255,136,0,0.05);border-radius:4px;border:1px solid rgba(255,136,0,0.1);align-items:flex-start;">
+              <span style="font-size:18px;">&#x2713;</span>
+              <div><div style="font-size:13px;font-weight:700;">Weekly hiring report generated &amp; emailed</div><div style="font-size:11px;color:var(--text2);">Requested via voice &middot; Sent to management &middot; 8:00 AM</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADMIN TAB -->
+      <div id="tab-admin" style="display:none">
+        <div class="sh"><div class="sh-title">User Management &middot; Admin Only</div><button class="btn btn-p" style="font-size:11px;padding:5px 12px;">+ Add User</button></div>
+        <div class="card">
+          <div class="card-title">Registered Users (5)</div>
+          <div class="admin-row">
+            <div class="admin-av av-admin">V</div>
+            <div class="admin-info">
+              <div style="display:flex;align-items:center;gap:8px;"><div class="admin-name">Venkatesh N</div><span class="admin-role-tag rt-admin">SUPER ADMIN</span></div>
+              <div class="admin-apps">Full access &middot; All 12 apps &middot; All actions &middot; PIN protected</div>
+            </div>
+          </div>
+          <div class="admin-row">
+            <div class="admin-av av-dev">R</div>
+            <div class="admin-info">
+              <div style="display:flex;align-items:center;gap:8px;"><div class="admin-name">Ravi Kumar</div><span class="admin-role-tag rt-dev">DEVELOPER</span></div>
+              <div class="admin-apps">Apps: SRJ &middot; Auth Service &middot; Can approve restarts of own apps only</div>
+            </div>
+          </div>
+          <div class="admin-row">
+            <div class="admin-av av-mkt">S</div>
+            <div class="admin-info">
+              <div style="display:flex;align-items:center;gap:8px;"><div class="admin-name">Sneha M</div><span class="admin-role-tag rt-mkt">MARKETING</span></div>
+              <div class="admin-apps">Access: CRM data &middot; Campaign reports &middot; No technical access</div>
+            </div>
+          </div>
+          <div class="admin-row">
+            <div class="admin-av av-ops">A</div>
+            <div class="admin-info">
+              <div style="display:flex;align-items:center;gap:8px;"><div class="admin-name">Arun S</div><span class="admin-role-tag rt-ops">OPERATIONS</span></div>
+              <div class="admin-apps">Read only &middot; Status view &middot; Can raise tickets only</div>
+            </div>
+          </div>
+          <div class="admin-row">
+            <div class="admin-av av-ceo">K</div>
+            <div class="admin-info">
+              <div style="display:flex;align-items:center;gap:8px;"><div class="admin-name">Kiran (CEO)</div><span class="admin-role-tag rt-ceo">EXECUTIVE</span></div>
+              <div class="admin-apps">Business reports &middot; Revenue &middot; Hiring summary &middot; No technical access</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sh"><div class="sh-title">Audit Log &middot; Full Compliance Record</div><span style="font-size:10px;color:var(--text2);font-family:'Orbitron',monospace;">WHO &middot; WHEN &middot; DEVICE &middot; IP</span></div>
+        <div id="auditLog" class="card" style="padding:0;overflow:hidden;">
+          <div class="inc-item"><div class="inc-bar" style="background:var(--green)"></div><div class="inc-body"><div class="inc-title" style="font-size:12px;">Index created on CandidateSkills table <span class="tag" style="background:rgba(0,255,136,0.1);color:var(--green);border:1px solid rgba(0,255,136,0.3);">L1 ACTION</span></div><div class="inc-meta"><span> Venkatesh N</span><span> 10:16 AM &middot; Jun 11</span><span> Chrome &middot; Windows</span><span> INC-2039 &middot; Confidence was 94%</span></div></div></div>
+          <div class="inc-item"><div class="inc-bar" style="background:var(--cyan)"></div><div class="inc-body"><div class="inc-title" style="font-size:12px;">Job posting created &middot; Java Developer, Bangalore <span class="tag tag-i">BUSINESS</span></div><div class="inc-meta"><span> Venkatesh N</span><span> 10:32 AM &middot; Jun 11</span><span> Chrome &middot; Windows</span><span> Business AI &middot; Job API</span></div></div></div>
+          <div class="inc-item"><div class="inc-bar" style="background:var(--cyan)"></div><div class="inc-body"><div class="inc-title" style="font-size:12px;">Interview invitations sent &middot; 10 candidates <span class="tag tag-i">BUSINESS</span></div><div class="inc-meta"><span> Venkatesh N</span><span> 9:15 AM &middot; Jun 11</span><span> Chrome &middot; Windows</span><span> Business AI &middot; Mail API</span></div></div></div>
+          <div class="inc-item"><div class="inc-bar" style="background:var(--green)"></div><div class="inc-body"><div class="inc-title" style="font-size:12px;">Recruitment API restarted &middot; DB timeout resolved <span class="tag" style="background:rgba(0,255,136,0.1);color:var(--green);border:1px solid rgba(0,255,136,0.3);">L1 ACTION</span></div><div class="inc-meta"><span> Venkatesh N</span><span> 2:14 AM &middot; Jun 11</span><span> Mobile &middot; iOS Safari</span><span> INC-2038 &middot; Confidence was 91%</span></div></div></div>
+          <div class="inc-item"><div class="inc-bar" style="background:var(--blue)"></div><div class="inc-body"><div class="inc-title" style="font-size:12px;">Weekly hiring report generated &amp; emailed <span class="tag tag-i">BUSINESS</span></div><div class="inc-meta"><span> Venkatesh N</span><span> 8:00 AM &middot; Jun 11</span><span> Voice Command</span><span> Report Engine &middot; Auto-scheduled</span></div></div></div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- MAX CHAT PANEL -->
+    <aside class="right">
+      <div class="chat-panel">
+        <div class="chat-head">
+          <div class="chat-av-wrap">
+            <div class="chat-av">J<div class="chat-av-ring"></div></div>
+            <div>
+              <div class="chat-name">MAX</div>
+              <div class="chat-tag">Your Personal AI &middot; Super Admin Mode</div>
+            </div>
+          </div>
+          <div class="chat-dots">
+            <div class="cdot"><div class="cdot-d" style="background:var(--green);box-shadow:0 0 4px var(--green);animation:pulse 2s infinite;"></div>Monitoring</div>
+            <div class="cdot"><div class="cdot-d" style="background:var(--cyan);box-shadow:0 0 4px var(--cyan);animation:pulse 2s infinite;"></div>Voice Ready</div>
+            <div class="cdot"><div class="cdot-d" style="background:var(--blue);box-shadow:0 0 4px var(--blue);animation:pulse 3s infinite;"></div>Learning</div>
+          </div>
+        </div>
+
+        <div class="chat-msgs" id="chatMsgs">
+          <div class="msg j"><div class="msg-av j">J</div><div><div class="bubble">Good morning, Venkatesh. I have been monitoring all 12 applications overnight. 2 incidents need your approval. Everything else is healthy. Shall I brief you?</div><div class="msg-time">09:00 AM</div></div></div>
+          <div class="msg u"><div class="msg-av v">V</div><div><div class="bubble">Yes brief me on critical first.</div><div class="msg-time">09:01 AM</div></div></div>
+          <div class="msg j"><div class="msg-av j">J</div><div><div class="bubble">Notification Service is down. Root cause: DB connection pool exhausted &middot; all 50 connections occupied. I recommend restarting and increasing pool to 100. Do you approve?</div><div class="msg-time">09:01 AM</div></div></div>
+          <div class="msg u"><div class="msg-av v">V</div><div><div class="bubble">Yes, do it.</div><div class="msg-time">09:02 AM</div></div></div>
+          <div class="msg j"><div class="msg-av j">J</div><div><div class="bubble">Restarting... ? Service is back online. Pool increased to 100. INC-2041 logged and closed. Audit record saved with your approval timestamp.</div><div class="msg-time">09:02 AM</div></div></div>
+        </div>
+
+        <div class="chat-input-area">
+          <div class="input-wrap">
+            <input class="chat-in" id="chatIn" placeholder="Ask MAX anything..." onkeypress="chatKey(event)"/>
+            <button class="ibtn ibtn-v" id="vBtn" onclick="toggleVoice()" title="Voice"></button>
+            <button class="ibtn ibtn-s" onclick="sendMsg()" title="Send">?</button>
+          </div>
+          <div class="input-hint">OR SAY "HEY MAX" ANYTIME</div>
+        </div>
+      </div>
+    </aside>
+
+  </div><!-- end layout -->
+</div><!-- end mainApp -->
+
+<!-- --- DEVELOPER APP (RAVI) --- -->
+<div id="app-dev" style="display:none">
+  <nav class="topnav">
+    <div class="nav-left"><div class="logo">M<span>A</span>X</div><div class="nav-badge"><div class="pulse"></div>MONITORING YOUR APPS</div></div>
+    <div class="nav-right">
+      <div class="nav-clock" id="clock-dev">00:00:00</div>
+      <div class="nav-user"><div class="nav-av" style="background:linear-gradient(135deg,#0055aa,#0088cc)">R</div><div><div class="nav-name">Ravi Kumar</div><div class="nav-role">DEVELOPER</div></div></div>
+      <button class="hey-btn" onclick="roleWake('dev')">&#x1F3A4; Hey MAX</button>
+    </div>
+  </nav>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sb-label">My Apps Only</div>
+      <div class="sb-item active"><span class="sb-icon">&#x2713;</span>My Dashboard</div>
+      <div class="sb-item"><span class="sb-icon">&#x2713;</span>SRJ App<span class="sb-badge green">OK</span></div>
+      <div class="sb-item"><span class="sb-icon">&#x2713;</span>Auth Service<span class="sb-badge green">OK</span></div>
+      <div class="sb-divider"></div>
+      <div class="sb-label">Monitoring</div>
+      <div class="sb-item"><span class="sb-icon">&#x2713;</span>My Incidents<span class="sb-badge orange">1</span></div>
+      <div class="sb-item"><span class="sb-icon">&#x2713;</span>My Logs</div>
+      <div class="sb-item"><span class="sb-icon">&#x2713;</span>My Metrics</div>
+      <div class="sb-divider"></div>
+      <div style="padding:14px;font-size:11px;color:var(--text2);border-top:1px solid var(--border);margin-top:auto;">
+        <div style="color:var(--orange);margin-bottom:4px;">Access Restricted</div>
+        You can only view and manage your assigned apps: SRJ &amp; Auth Service.<br><br>Other apps, business data and admin controls are not visible to your role.
+      </div>
+    </aside>
+    <main class="main">
+      <div class="brief" style="background:linear-gradient(135deg,rgba(0,80,150,0.3),rgba(0,20,50,0.7))">
+        <div class="brief-head"><div class="brief-emoji">---</div><div><div class="brief-title">Good Morning, Ravi</div><div class="brief-sub">Developer View &middot; Your Apps Only &middot; June 11, 2026</div></div></div>
+        <div class="brief-grid">
+          <div class="brief-item"><span class="brief-ic">&#x2713;</span>SRJ is healthy &middot; 95ms response</div>
+          <div class="brief-item"><span class="brief-ic">&#x2713;</span>Auth Service healthy &middot; 45ms</div>
+          <div class="brief-item"><span class="brief-ic">&#x2713;</span>No errors in last 1 hour</div>
+          <div class="brief-item"><span class="brief-ic">&#x2713;</span>1 slow query resolved at 10:16 AM</div>
+        </div>
+      </div>
+      <div class="g2">
+        <div class="stat s-green"><div class="stat-label">SRJ Response</div><div class="stat-val gv" style="font-size:22px">95<span style="font-size:12px;color:var(--text2)">ms</span></div><div class="stat-sub" style="color:var(--green)">&#x26A0; Normal</div></div>
+        <div class="stat s-green"><div class="stat-label">Auth Response</div><div class="stat-val gv" style="font-size:22px">45<span style="font-size:12px;color:var(--text2)">ms</span></div><div class="stat-sub" style="color:var(--green)">&#x26A0; Normal</div></div>
+      </div>
+      <div class="sh"><div class="sh-title">My Applications</div></div>
+      <div class="g2">
+        <div class="app-card ok" style="padding:16px">
+          <div class="app-dot g"></div><div class="app-name" style="font-size:14px;margin-bottom:10px">SRJ &middot; Recruitment Platform</div>
+          <div class="pw"><div class="ph"><span>CPU</span><span style="color:var(--green)">23%</span></div><div class="pb"><div class="pf" style="width:23%"></div></div></div>
+          <div class="pw"><div class="ph"><span>Memory</span><span style="color:var(--green)">41%</span></div><div class="pb"><div class="pf" style="width:41%"></div></div></div>
+          <div class="pw"><div class="ph"><span>Response</span><span style="color:var(--green)">95ms</span></div><div class="pb"><div class="pf" style="width:30%"></div></div></div>
+          <div style="margin-top:10px;font-size:11px;color:var(--green)">Healthy &middot; No action needed</div>
+        </div>
+        <div class="app-card ok" style="padding:16px">
+          <div class="app-dot g"></div><div class="app-name" style="font-size:14px;margin-bottom:10px">Auth Service</div>
+          <div class="pw"><div class="ph"><span>CPU</span><span style="color:var(--green)">12%</span></div><div class="pb"><div class="pf" style="width:12%"></div></div></div>
+          <div class="pw"><div class="ph"><span>Memory</span><span style="color:var(--green)">28%</span></div><div class="pb"><div class="pf" style="width:28%"></div></div></div>
+          <div class="pw"><div class="ph"><span>Response</span><span style="color:var(--green)">45ms</span></div><div class="pb"><div class="pf" style="width:15%"></div></div></div>
+          <div style="margin-top:10px;font-size:11px;color:var(--green)">Healthy &middot; No action needed</div>
+        </div>
+      </div>
+      <div class="sh"><div class="sh-title">Recent Incidents &middot; My Apps</div></div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="inc-item" style="opacity:0.6">
+          <div class="inc-bar r"></div>
+          <div class="inc-body"><div class="inc-title">SRJ slow queries &middot; CandidateSkills missing index <span class="tag tag-r">RESOLVED</span></div><div class="inc-meta"><span>10:16 AM today</span><span>Index created &middot; approved by Admin</span></div></div>
+        </div>
+        <div style="padding:14px;font-size:12px;color:var(--text2);text-align:center">No other incidents for your apps today.</div>
+      </div>
+      <div class="card" style="background:rgba(255,136,0,0.05);border-color:rgba(255,136,0,0.2)">
+        <div style="font-size:12px;color:var(--orange);font-weight:700;margin-bottom:6px">What You Cannot Do</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.8">
+          &middot; Cannot see other teams' applications (PG, CRM, Notification Service, etc.)<br>
+          &middot; Cannot approve infrastructure-level actions (scale, DB changes)<br>
+          &middot; Cannot access business data (candidates, job postings, salaries)<br>
+          &middot; Cannot see other users or admin panel
+        </div>
+      </div>
+    </main>
+    <aside class="right">
+      <div class="chat-panel">
+        <div class="chat-head">
+          <div class="chat-av-wrap"><div class="chat-av">J<div class="chat-av-ring"></div></div><div><div class="chat-name">MAX</div><div class="chat-tag">Developer Assistant &middot; Ravi's View</div></div></div>
+          <div class="chat-dots"><div class="cdot"><div class="cdot-d" style="background:var(--green);animation:pulse 2s infinite"></div>Watching SRJ &amp; Auth</div></div>
+        </div>
+        <div class="chat-msgs" id="chat-dev">
+          <div class="msg j"><div class="msg-av j">J</div><div><div class="bubble">Good morning, Ravi. Both your apps are healthy. SRJ at 95ms, Auth at 45ms. The earlier slow query on CandidateSkills was resolved. No action needed from you right now.</div><div class="msg-time">09:00 AM</div></div></div>
+          <div class="msg j"><div class="msg-av j">J</div><div><div class="bubble">Note: The Notification Service is currently down but that is not assigned to you. Admin is handling it.</div><div class="msg-time">09:01 AM</div></div></div>
+        </div>
+        <div class="chat-input-area"><div class="input-wrap"><input class="chat-in" id="in-dev" placeholder="Ask about SRJ or Auth Service..." onkeypress="if(event.key==='Enter')roleChat('dev')"/><button class="ibtn ibtn-s" onclick="roleChat('dev')">?</button></div><div class="input-hint">YOU CAN ONLY ASK ABOUT YOUR APPS</div></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- --- MARKETING APP (SNEHA) --- -->
+<div id="app-mkt" style="display:none">
+  <nav class="topnav">
+    <div class="nav-left"><div class="logo">M<span>A</span>X</div><div class="nav-badge"><div class="pulse"></div>BUSINESS ASSISTANT</div></div>
+    <div class="nav-right">
+      <div class="nav-clock" id="clock-mkt">00:00:00</div>
+      <div class="nav-user"><div class="nav-av" style="background:linear-gradient(135deg,#660099,#aa00cc)">S</div><div><div class="nav-name">Sneha M</div><div class="nav-role">MARKETING</div></div></div>
+      <button class="hey-btn" onclick="roleWake('mkt')">&#x1F3A4; Hey MAX</button>
+    </div>
+  </nav>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sb-label">Marketing</div>
+      <div class="sb-item active"><span class="sb-icon">&#x2713;</span>My Dashboard</div>
+      <div class="sb-item"><span class="sb-icon">&#x2713;</span>CRM Overview</div>
+      <div class="sb-item"><span class="sb-icon">&#x2713;</span>Campaigns</div>
+      <div class="sb-divider"></div>
+      <div class="sb-label">Reports</div>
+      <div class="sb-item"><span class="sb-icon">&#x2713;</span>Lead Reports</div>
+      <div class="sb-item"><span class="sb-icon">&#x2713;</span>Weekly Summary</div>
+      <div class="sb-divider"></div>
+      <div style="padding:14px;font-size:11px;color:var(--text2);border-top:1px solid var(--border);margin-top:auto;">
+        <div style="color:var(--orange);margin-bottom:4px;">Access Restricted</div>
+        You can access CRM and marketing data only. Technical systems, recruitment data and admin controls are not available.
+      </div>
+    </aside>
+    <main class="main">
+      <div class="brief" style="background:linear-gradient(135deg,rgba(100,0,150,0.2),rgba(20,0,40,0.7))">
+        <div class="brief-head"><div class="brief-emoji">&#x1F4CB;</div><div><div class="brief-title">Good Morning, Sneha</div><div class="brief-sub">Marketing View &middot; CRM &amp; Campaigns &middot; June 11, 2026</div></div></div>
+        <div class="brief-grid">
+          <div class="brief-item"><span class="brief-ic">&#x2713;</span>38 new leads this week</div>
+          <div class="brief-item"><span class="brief-ic">&#x2713;</span>120 emails sent today</div>
+          <div class="brief-item"><span class="brief-ic">&#x2713;</span>Campaign conversion: 4.2%</div>
+          <div class="brief-item"><span class="brief-ic">&#x2713;</span>CRM is working normally</div>
+        </div>
+      </div>
+      <div class="g3">
+        <div class="stat"><div class="stat-label">New Leads</div><div class="stat-val cv" style="font-size:22px">38</div><div class="stat-sub">This week</div></div>
+        <div class="stat s-green"><div class="stat-label">Active Campaigns</div><div class="stat-val gv" style="font-size:22px">6</div><div class="stat-sub">2 ending this week</div></div>
+        <div class="stat"><div class="stat-label">Email Open Rate</div><div class="stat-val cv" style="font-size:22px">28<span style="font-size:12px">%</span></div><div class="stat-sub" style="color:var(--green)">&#x26A0; Above average</div></div>
+      </div>
+      <div class="sh"><div class="sh-title">CRM System Status</div></div>
+      <div class="card" style="display:flex;align-items:center;gap:16px">
+        <div style="width:14px;height:14px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite;flex-shrink:0"></div>
+        <div><div style="font-size:14px;font-weight:700">CRM Platform &middot; Healthy</div><div style="font-size:11px;color:var(--text2);margin-top:3px">Response time 78ms &middot; All features working normally &middot; Last checked 5 seconds ago</div></div>
+      </div>
+      <div class="card" style="background:rgba(255,136,0,0.05);border-color:rgba(255,136,0,0.2)">
+        <div style="font-size:12px;color:var(--orange);font-weight:700;margin-bottom:6px">What You Cannot See</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.8">
+          &middot; Cannot see server infrastructure or technical metrics<br>
+          &middot; Cannot see recruitment data, candidate details or salaries<br>
+          &middot; Cannot approve any system actions<br>
+          &middot; Cannot access admin or other departments' data
+        </div>
+      </div>
+    </main>
+    <aside class="right">
+      <div class="chat-panel">
+        <div class="chat-head">
+          <div class="chat-av-wrap"><div class="chat-av">J<div class="chat-av-ring"></div></div><div><div class="chat-name">MAX</div><div class="chat-tag">Marketing Assistant &middot; Sneha's View</div></div></div>
+        </div>
+        <div class="chat-msgs" id="chat-mkt">
+          <div class="msg j"><div class="msg-av j">J</div><div><div class="bubble">Good morning, Sneha. CRM is healthy. You have 38 new leads this week and 6 active campaigns. Conversion rate is at 4.2% &middot; above last week's 3.8%. Anything you need?</div><div class="msg-time">09:00 AM</div></div></div>
+        </div>
+        <div class="chat-input-area"><div class="input-wrap"><input class="chat-in" id="in-mkt" placeholder="Ask about CRM or campaigns..." onkeypress="if(event.key==='Enter')roleChat('mkt')"/><button class="ibtn ibtn-s" onclick="roleChat('mkt')">?</button></div><div class="input-hint">MARKETING &amp; CRM QUERIES ONLY</div></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- --- OPERATIONS APP (ARUN) --- -->
+<div id="app-ops" style="display:none">
+  <nav class="topnav">
+    <div class="nav-left"><div class="logo">M<span>A</span>X</div><div class="nav-badge"><div class="pulse"></div>STATUS VIEW</div></div>
+    <div class="nav-right">
+      <div class="nav-clock" id="clock-ops">00:00:00</div>
+      <div class="nav-user"><div class="nav-av" style="background:linear-gradient(135deg,#006633,#009944)">A</div><div><div class="nav-name">Arun S</div><div class="nav-role">OPERATIONS</div></div></div>
+      <button class="hey-btn" onclick="roleWake('ops')">&#x1F3A4; Hey MAX</button>
+    </div>
+  </nav>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sb-label">Operations</div>
+      <div class="sb-item active"><span class="sb-icon">&#x2713;</span>System Status</div>
+      <div class="sb-item"><span class="sb-icon">&#x2713;</span>Open Incidents</div>
+      <div class="sb-item"><span class="sb-icon">&#x2713;</span>Raise Ticket</div>
+      <div class="sb-divider"></div>
+      <div style="padding:14px;font-size:11px;color:var(--text2);border-top:1px solid var(--border);margin-top:auto;">
+        <div style="color:var(--orange);margin-bottom:4px">Read Only</div>
+        You can view system status and raise tickets. No technical details or actions available.
+      </div>
+    </aside>
+    <main class="main">
+      <div class="brief" style="background:linear-gradient(135deg,rgba(0,80,40,0.2),rgba(0,20,10,0.7))">
+        <div class="brief-head"><div class="brief-emoji">---</div><div><div class="brief-title">Good Morning, Arun</div><div class="brief-sub">Operations View &middot; System Status Only &middot; June 11, 2026</div></div></div>
+      </div>
+      <div class="sh"><div class="sh-title">All Systems &middot; Customer Facing</div></div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg3);border:1px solid rgba(0,255,136,0.2);border-radius:6px">
+          <div style="width:12px;height:12px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 2s infinite;flex-shrink:0"></div>
+          <div style="flex:1"><div style="font-size:13px;font-weight:700">SRJ &middot; Recruitment Platform</div><div style="font-size:11px;color:var(--text2)">Working normally &middot; Users can access without issues</div></div>
+          <span class="tag tag-r">ONLINE</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg3);border:1px solid rgba(255,136,0,0.2);border-radius:6px">
+          <div style="width:12px;height:12px;border-radius:50%;background:var(--orange);box-shadow:0 0 6px var(--orange);animation:pulse 1s infinite;flex-shrink:0"></div>
+          <div style="flex:1"><div style="font-size:13px;font-weight:700">PG &middot; Payroll Service</div><div style="font-size:11px;color:var(--text2)">Slightly slow &middot; Engineering team is aware &middot; Not affecting users yet</div></div>
+          <span class="tag tag-h">SLOW</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg3);border:1px solid rgba(0,255,136,0.2);border-radius:6px">
+          <div style="width:12px;height:12px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 2s infinite;flex-shrink:0"></div>
+          <div style="flex:1"><div style="font-size:13px;font-weight:700">CRM Platform</div><div style="font-size:11px;color:var(--text2)">Working normally</div></div>
+          <span class="tag tag-r">ONLINE</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg3);border:1px solid rgba(255,34,68,0.2);border-radius:6px">
+          <div style="width:12px;height:12px;border-radius:50%;background:var(--red);box-shadow:0 0 6px var(--red);animation:pulse 0.5s infinite;flex-shrink:0"></div>
+          <div style="flex:1"><div style="font-size:13px;font-weight:700">Notification Service</div><div style="font-size:11px;color:var(--text2)">Currently down &middot; Engineering team is fixing it &middot; Email alerts may be delayed</div></div>
+          <span class="tag tag-c">DOWN</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg3);border:1px solid rgba(0,255,136,0.2);border-radius:6px">
+          <div style="width:12px;height:12px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;flex-shrink:0"></div>
+          <div style="flex:1"><div style="font-size:13px;font-weight:700">All Other Systems (8)</div><div style="font-size:11px;color:var(--text2)">All working normally</div></div>
+          <span class="tag tag-r">ONLINE</span>
+        </div>
+      </div>
+      <button class="btn btn-p" style="width:100%;padding:12px;margin-bottom:12px" onclick="opsRaiseTicket()">+ Raise an Issue Ticket</button>
+      <div class="card" style="background:rgba(255,136,0,0.05);border-color:rgba(255,136,0,0.2)">
+        <div style="font-size:12px;color:var(--orange);font-weight:700;margin-bottom:6px">What You Cannot Do</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.8">
+          &middot; Cannot see technical details &middot; no logs, metrics, error codes<br>
+          &middot; Cannot approve or trigger any system action<br>
+          &middot; Cannot see recruitment, marketing or financial data<br>
+          &middot; Can only view status and raise tickets for engineering team
+        </div>
+      </div>
+    </main>
+    <aside class="right">
+      <div class="chat-panel">
+        <div class="chat-head">
+          <div class="chat-av-wrap"><div class="chat-av">J<div class="chat-av-ring"></div></div><div><div class="chat-name">MAX</div><div class="chat-tag">Operations View &middot; Status Only</div></div></div>
+        </div>
+        <div class="chat-msgs" id="chat-ops">
+          <div class="msg j"><div class="msg-av j">J</div><div><div class="bubble">Good morning, Arun. Most systems are working. One system (Notification Service) is currently down &middot; the engineering team is already working on it. Email notifications may be delayed. No action needed from you.</div><div class="msg-time">09:00 AM</div></div></div>
+        </div>
+        <div class="chat-input-area"><div class="input-wrap"><input class="chat-in" id="in-ops" placeholder="Ask if a system is working..." onkeypress="if(event.key==='Enter')roleChat('ops')"/><button class="ibtn ibtn-s" onclick="roleChat('ops')">?</button></div><div class="input-hint">STATUS QUERIES &amp; TICKET RAISING ONLY</div></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- --- EXECUTIVE APP (KIRAN/CEO) --- -->
+<div id="app-ceo" style="display:none">
+  <nav class="topnav">
+    <div class="nav-left"><div class="logo">M<span>A</span>X</div><div class="nav-badge"><div class="pulse"></div>EXECUTIVE BRIEFING</div></div>
+    <div class="nav-right">
+      <div class="nav-clock" id="clock-ceo">00:00:00</div>
+      <div class="nav-user"><div class="nav-av" style="background:linear-gradient(135deg,#884400,#cc6600)">K</div><div><div class="nav-name">Kiran</div><div class="nav-role">CEO / EXECUTIVE</div></div></div>
+      <button class="hey-btn" onclick="roleWake('ceo')">&#x1F3A4; Hey MAX</button>
+    </div>
+  </nav>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sb-label">Executive</div>
+      <div class="sb-item active"><span class="sb-icon">&#x2713;</span>My Briefing</div>
+      <div class="sb-item"><span class="sb-icon">&#x2713;</span>Business KPIs</div>
+      <div class="sb-item"><span class="sb-icon">&#x2713;</span>Hiring Pipeline</div>
+      <div class="sb-divider"></div>
+      <div class="sb-label">Reports</div>
+      <div class="sb-item"><span class="sb-icon">&#x2713;</span>Weekly Report</div>
+      <div class="sb-item"><span class="sb-icon">&#x2713;</span>Monthly Report</div>
+    </aside>
+    <main class="main">
+      <div class="brief" style="background:linear-gradient(135deg,rgba(130,60,0,0.25),rgba(30,10,0,0.7))">
+        <div class="brief-head"><div class="brief-emoji">&#x1F4CB;</div><div><div class="brief-title">Good Morning, Kiran</div><div class="brief-sub">Executive Summary - June 11, 2026</div></div></div>
+        <div class="brief-grid">
+          <div class="brief-item"><span class="brief-ic">&#x2713;</span>Revenue target at 82%</div>
+          <div class="brief-item"><span class="brief-ic">&#x2713;</span>47 candidates in pipeline</div>
+          <div class="brief-item"><span class="brief-ic">&#x2713;</span>5 offers accepted this week</div>
+          <div class="brief-item"><span class="brief-ic">&#x2713;</span>12 interviews today</div>
+          <div class="brief-item"><span class="brief-ic">&#x2713;</span>All systems operational</div>
+          <div class="brief-item"><span class="brief-ic">&#x2713;</span>1 technical issue &middot; team handling</div>
+        </div>
+      </div>
+      <div class="g4">
+        <div class="stat"><div class="stat-label">Revenue Target</div><div class="stat-val ov" style="font-size:22px">82<span style="font-size:12px">%</span></div><div class="stat-sub" style="color:var(--orange)">&#x26A0; On track</div></div>
+        <div class="stat s-green"><div class="stat-label">Offers Accepted</div><div class="stat-val gv" style="font-size:22px">5</div><div class="stat-sub">This week</div></div>
+        <div class="stat"><div class="stat-label">Active Pipeline</div><div class="stat-val cv" style="font-size:22px">47</div><div class="stat-sub">Candidates</div></div>
+        <div class="stat"><div class="stat-label">Interviews Today</div><div class="stat-val cv" style="font-size:22px">12</div><div class="stat-sub">5 done &middot; 7 upcoming</div></div>
+      </div>
+      <div class="sh"><div class="sh-title">Systems Health &middot; Simple View</div></div>
+      <div class="card" style="display:flex;align-items:center;gap:16px;margin-bottom:10px">
+        <div style="width:16px;height:16px;border-radius:50%;background:var(--orange);box-shadow:0 0 8px var(--orange);animation:pulse 1s infinite;flex-shrink:0"></div>
+        <div><div style="font-size:14px;font-weight:700">1 technical issue in progress</div><div style="font-size:12px;color:var(--text2);margin-top:3px">Engineering team is handling it. No business impact at this time. You will be notified if escalation is needed.</div></div>
+      </div>
+      <div class="card" style="display:flex;align-items:center;gap:16px">
+        <div style="width:16px;height:16px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite;flex-shrink:0"></div>
+        <div><div style="font-size:14px;font-weight:700">All customer-facing systems operational</div><div style="font-size:12px;color:var(--text2);margin-top:3px">SRJ, CRM, Email and all other business systems are working normally.</div></div>
+      </div>
+    </main>
+    <aside class="right">
+      <div class="chat-panel">
+        <div class="chat-head">
+          <div class="chat-av-wrap"><div class="chat-av">J<div class="chat-av-ring"></div></div><div><div class="chat-name">MAX</div><div class="chat-tag">Executive Briefing &middot; Business Only</div></div></div>
+        </div>
+        <div class="chat-msgs" id="chat-ceo">
+          <div class="msg j"><div class="msg-av j">J</div><div><div class="bubble">Good morning, Kiran. Revenue is at 82% of target &middot; on track for the month. 5 candidates accepted offers this week. 12 interviews scheduled today. One technical issue is being handled by the team &middot; no business impact. What would you like to know?</div><div class="msg-time">09:00 AM</div></div></div>
+        </div>
+        <div class="chat-input-area"><div class="input-wrap"><input class="chat-in" id="in-ceo" placeholder="Ask about business metrics..." onkeypress="if(event.key==='Enter')roleChat('ceo')"/><button class="ibtn ibtn-s" onclick="roleChat('ceo')">?</button></div><div class="input-hint">BUSINESS QUERIES ONLY</div></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- TOASTS -->
+<div class="toasts" id="toasts"></div>
+
+<!-- WAKE MODAL -->
+<div id="wakeModal">
+  <div class="wake-ring-wrap">
+    <div class="wr1"></div><div class="wr2"></div>
+    <div class="wake-circle">J</div>
+  </div>
+  <div class="wake-text">MAX ACTIVATED</div>
+  <div class="wake-sub">Listening... Speak your command</div>
+  <div class="wake-bars">
+    <div class="wb"></div><div class="wb"></div><div class="wb"></div>
+    <div class="wb"></div><div class="wb"></div><div class="wb"></div>
+    <div class="wb"></div><div class="wb"></div><div class="wb"></div>
+  </div>
+  <button class="wake-close-btn" onclick="closeWake()">Cancel</button>
+</div>
+
+<script>
+// SETUP - OTP FLOW 
+let currentUser = null;
+let otpTimerInterval = null;
+let otpSeconds = 300;
+let attemptsLeft = 3;
+const DEMO_OTP = '123456'; // demo only - real system generates random
+
+// Show user list after simulated DB fetch
+setTimeout(() => {
+  var dl = document.getElementById('dbLoading');
+  var ul = document.getElementById('userList');
+  if(dl) dl.style.display = 'none';
+  if(ul) { ul.style.display = 'block'; }
+}, 1800);
+
+const userMap = {
+  venkatesh: { name:'Venkatesh N', role:'SUPER ADMIN', avClass:'av-admin', initial:'V' },
+  dev:       { name:'Ravi Kumar',  role:'DEVELOPER',   avClass:'av-dev',   initial:'R' },
+  mkt:       { name:'Sneha M',     role:'MARKETING',   avClass:'av-mkt',   initial:'S' },
+  ops:       { name:'Arun S',      role:'OPERATIONS',  avClass:'av-ops',   initial:'A' },
+  ceo:       { name:'Kiran (CEO)', role:'EXECUTIVE',   avClass:'av-ceo',   initial:'K' }
+};
+
+function selectUser(who, maskedEmail, role) {
+  currentUser = who;
+  attemptsLeft = 3;
+  const u = userMap[who];
+
+  // populate step 2
+  const av = document.getElementById('otpAvatar');
+  av.className = 'user-avatar ' + u.avClass;
+  av.style.cssText = 'width:52px;height:52px;font-size:18px;margin:0 auto 12px;';
+  av.textContent = u.initial;
+  document.getElementById('otpName').textContent = u.name;
+  document.getElementById('otpRoleLabel').textContent = u.role;
+  document.getElementById('otpEmail').textContent = maskedEmail;
+  document.getElementById('otpError').textContent = '';
+  document.getElementById('otpAttempts').textContent = '3 attempts remaining';
+
+  // clear boxes
+  document.querySelectorAll('.otp-box').forEach(b => { b.value=''; b.classList.remove('filled','error'); });
+
+  // show step 2
+  document.getElementById('step1').style.display = 'none';
+  document.getElementById('step2').style.display = 'block';
+
+  // start timer
+  startOtpTimer();
+
+  // focus first box
+  setTimeout(() => document.querySelectorAll('.otp-box')[0].focus(), 100);
+
+  // simulate OTP sent notification
+  setTimeout(() => {
+    if(document.getElementById('step2').style.display !== 'none') {
+      showToastSetup('? OTP Sent', 'Check your email: ' + maskedEmail);
+    }
+  }, 600);
+}
+
+function startOtpTimer() {
+  clearInterval(otpTimerInterval);
+  otpSeconds = 300;
+  updateTimer();
+  otpTimerInterval = setInterval(() => {
+    otpSeconds--;
+    updateTimer();
+    if(otpSeconds <= 0) {
+      clearInterval(otpTimerInterval);
+      document.getElementById('timerVal').textContent = 'EXPIRED';
+      document.getElementById('timerVal').style.color = 'var(--red)';
+      document.querySelectorAll('.otp-box').forEach(b => b.disabled = true);
+      document.getElementById('otpError').textContent = 'OTP expired. Please resend.';
+    }
+  }, 1000);
+}
+
+function updateTimer() {
+  const m = Math.floor(otpSeconds/60);
+  const s = otpSeconds % 60;
+  const tv = document.getElementById('timerVal');
+  tv.textContent = m + ':' + String(s).padStart(2,'0');
+  tv.style.color = otpSeconds < 60 ? 'var(--red)' : 'var(--yellow)';
+}
+
+function otpInput(el, idx) {
+  el.value = el.value.replace(/[^0-9]/g,'');
+  if(el.value) {
+    el.classList.add('filled');
+    const boxes = document.querySelectorAll('.otp-box');
+    if(idx < 5) boxes[idx+1].focus();
+    else verifyOTP();
+  } else {
+    el.classList.remove('filled');
+  }
+}
+
+function otpKey(e, idx) {
+  if(e.key === 'Backspace') {
+    const boxes = document.querySelectorAll('.otp-box');
+    if(!boxes[idx].value && idx > 0) { boxes[idx-1].focus(); boxes[idx-1].value=''; boxes[idx-1].classList.remove('filled'); }
+  }
+}
+
+function verifyOTP() {
+  const boxes = document.querySelectorAll('.otp-box');
+  const entered = Array.from(boxes).map(b => b.value).join('');
+  if(entered.length < 6) { document.getElementById('otpError').textContent = 'Please enter all 6 digits.'; return; }
+
+  if(entered === DEMO_OTP) {
+    // correct
+    clearInterval(otpTimerInterval);
+    boxes.forEach(b => { b.classList.remove('error'); b.style.borderColor='var(--green)'; });
+    document.getElementById('step2').style.display = 'none';
+    document.getElementById('step3').style.display = 'block';
+    document.getElementById('step3Name').textContent = userMap[currentUser].name + ' - ' + userMap[currentUser].role;
+
+    setTimeout(() => {
+      document.getElementById('setupScreen').style.display = 'none';
+      const appId = currentUser === 'venkatesh' ? 'mainApp' : 'app-' + currentUser;
+      document.getElementById(appId).style.display = 'block';
+      if(currentUser === 'venkatesh') startApp();
+      else startRoleClock(appId);
+    }, 2000);
+
+  } else {
+    // wrong OTP
+    attemptsLeft--;
+    boxes.forEach(b => b.classList.add('error'));
+    setTimeout(() => boxes.forEach(b => { b.classList.remove('error'); b.value=''; b.classList.remove('filled'); }), 600);
+    setTimeout(() => document.querySelectorAll('.otp-box')[0].focus(), 650);
+
+    if(attemptsLeft <= 0) {
+      document.getElementById('otpError').textContent = 'Too many attempts. Locked for 15 minutes.';
+      document.getElementById('otpAttempts').textContent = ' Account locked';
+      document.querySelectorAll('.otp-box').forEach(b => b.disabled = true);
+      clearInterval(otpTimerInterval);
+    } else {
+      document.getElementById('otpError').textContent = 'Incorrect OTP. Try again.';
+      document.getElementById('otpAttempts').textContent = attemptsLeft + ' attempt' + (attemptsLeft===1?'':'s') + ' remaining';
+    }
+  }
+}
+
+function resendOTP() {
+  document.querySelectorAll('.otp-box').forEach(b => { b.value=''; b.classList.remove('filled','error'); b.disabled=false; });
+  document.getElementById('otpError').textContent = '';
+  attemptsLeft = 3;
+  document.getElementById('otpAttempts').textContent = '3 attempts remaining';
+  startOtpTimer();
+  showToastSetup('? OTP Resent', 'A new OTP has been sent to your email.');
+  setTimeout(() => document.querySelectorAll('.otp-box')[0].focus(), 100);
+}
+
+function backToNames() {
+  clearInterval(otpTimerInterval);
+  document.getElementById('step2').style.display = 'none';
+  document.getElementById('step3').style.display = 'none';
+  document.getElementById('step1').style.display = 'block';
+}
+
+// small toast for setup screen
+function showToastSetup(title, body) {
+  const el = document.createElement('div');
+  el.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--cyan2);border-radius:8px;padding:12px 20px;font-size:13px;color:var(--text);z-index:99999;box-shadow:0 0 20px rgba(0,212,255,0.2);text-align:center;min-width:260px;';
+  el.innerHTML = '<strong style="color:var(--cyan)">' + title + '</strong><br><span style="font-size:11px;color:var(--text2)">' + body + '</span>';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+function startRoleClock(appId) {
+  const roleKey = appId.replace('app-','');
+  const el = document.getElementById('clock-'+roleKey);
+  if(!el) return;
+  const tick = () => el.textContent = new Date().toLocaleTimeString('en-IN',{hour12:false});
+  tick(); setInterval(tick, 1000);
+}
+
+function opsRaiseTicket() {
+  const c = document.getElementById('chat-ops');
+  addRoleMsg(c,'j','Sure, Arun. What is the issue you want to report? I will create a ticket and notify the engineering team immediately.');
+}
+
+function roleChat(role) {
+  const inp = document.getElementById('in-'+role);
+  const t = inp.value.trim(); if(!t) return;
+  inp.value='';
+  const c = document.getElementById('chat-'+role);
+  addRoleMsg(c,'u',t);
+  showRoleAnalysis(role, c, t);
+}
+
+function showRoleAnalysis(role, container, question) {
+  var roleSteps = {
+    dev: [
+      { icon: '&#x1F50D;', text: 'Reading your question...' },
+      { icon: '&#x1F4E1;', text: 'Checking SRJ metrics...' },
+      { icon: '&#x1F5C4;', text: 'Querying service logs...' },
+      { icon: '&#x2705;', text: 'Reply ready...' }
+    ],
+    mkt: [
+      { icon: '&#x1F50D;', text: 'Reading your question...' },
+      { icon: '&#x1F4CA;', text: 'Checking CRM data...' },
+      { icon: '&#x1F4CB;', text: 'Loading campaign stats...' },
+      { icon: '&#x2705;', text: 'Reply ready...' }
+    ],
+    ops: [
+      { icon: '&#x1F50D;', text: 'Reading your question...' },
+      { icon: '&#x1F4E1;', text: 'Checking system status...' },
+      { icon: '&#x2705;', text: 'Reply ready...' }
+    ],
+    ceo: [
+      { icon: '&#x1F50D;', text: 'Reading your question...' },
+      { icon: '&#x1F4C8;', text: 'Loading business KPIs...' },
+      { icon: '&#x1F465;', text: 'Checking hiring pipeline...' },
+      { icon: '&#x2705;', text: 'Summary ready...' }
+    ]
+  };
+  var steps = roleSteps[role] || roleSteps.ops;
+  var totalTime = steps.length * 600;
+  var uid = 'ra_' + Date.now();
+  container.insertAdjacentHTML('beforeend',
+    '<div class="msg j" id="' + uid + '">' +
+    '<div class="msg-av j">M</div>' +
+    '<div><div class="bubble" style="background:rgba(0,20,50,0.6);border:1px solid rgba(0,212,255,0.2);min-width:190px;">' +
+    '<div style="font-size:10px;font-family:Orbitron,monospace;color:var(--cyan);letter-spacing:1px;margin-bottom:7px;">MAX ANALYZING...</div>' +
+    '<div id="rs_' + uid + '" style="display:flex;flex-direction:column;gap:5px;"></div>' +
+    '<div style="margin-top:8px;height:3px;background:rgba(255,255,255,0.05);border-radius:2px;overflow:hidden;">' +
+    '<div id="rp_' + uid + '" style="height:100%;width:0%;background:linear-gradient(90deg,var(--cyan2),var(--cyan));border-radius:2px;transition:width 0.4s;"></div>' +
+    '</div></div></div></div>'
+  );
+  container.scrollTop = container.scrollHeight;
+  steps.forEach(function(step, i) {
+    setTimeout(function() {
+      var sl = document.getElementById('rs_' + uid);
+      var pb = document.getElementById('rp_' + uid);
+      if (!sl) return;
+      var rowId = 'rsd_' + uid + '_' + i;
+      var dotId = 'rdot_' + uid + '_' + i;
+      sl.insertAdjacentHTML('beforeend',
+        '<div id="' + rowId + '" style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2);opacity:0;transition:opacity 0.3s;">' +
+        '<span>' + step.icon + '</span><span>' + step.text + '</span>' +
+        '<span id="' + dotId + '" style="margin-left:auto;width:6px;height:6px;border-radius:50%;background:var(--cyan);animation:pulse 0.8s infinite;"></span>' +
+        '</div>'
+      );
+      setTimeout(function() { var el = document.getElementById(rowId); if (el) el.style.opacity = '1'; }, 50);
+      if (i > 0) {
+        var pd = document.getElementById('rdot_' + uid + '_' + (i - 1));
+        if (pd) { pd.style.animation = 'none'; pd.style.background = 'var(--green)'; }
+      }
+      if (pb) pb.style.width = Math.round(((i + 1) / steps.length) * 100) + '%';
+    }, i * 600);
+  });
+  setTimeout(function() {
+    var card = document.getElementById(uid);
+    if (card) {
+      var reply = getRoleReply(role, question.toLowerCase());
+      var t = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+      card.outerHTML =
+        '<div class="msg j"><div class="msg-av j">M</div>' +
+        '<div><div class="bubble">' + reply + '</div>' +
+        '<div class="msg-time">' + t + '</div></div></div>';
+      container.scrollTop = container.scrollHeight;
+    }
+  }, totalTime + 400);
+}
+function roleWake(role) {
+  document.getElementById('wakeModal').classList.add('on');
+  setTimeout(() => {
+    closeWake();
+    const c = document.getElementById('chat-'+role);
+    addRoleMsg(c,'u','Hey MAX, give me a quick status update.');
+    setTimeout(() => addRoleMsg(c,'j', getRoleReply(role,'status')), 1200);
+  }, 3500);
+}
+
+function getRoleReply(role, t) {
+  if(role==='dev') {
+    if(t.includes('srj')||t.includes('status')||t.includes('health')) return 'SRJ is healthy. CPU 23%, memory 41%, response time 95ms. No errors in the last hour. Auth Service is also healthy at 45ms.';
+    if(t.includes('log')||t.includes('error')) return 'Last 10 errors in SRJ: all from the CandidateSkills slow query - resolved at 10:16 AM after index was created. No new errors since then.';
+    if(t.includes('auth')) return 'Auth Service is fully healthy. 45ms response, CPU 12%, memory 28%. No failed authentication attempts in the last hour.';
+    if(t.includes('restart')||t.includes('fix')||t.includes('deploy')) return 'To restart SRJ or Auth Service, I need approval. Shall I send an approval request to Admin (Venkatesh)?';
+    return 'I can help you with SRJ and Auth Service only. For other apps, please contact Admin. What specific information do you need?';
+  }
+  if(role==='mkt') {
+    if(t.includes('lead')||t.includes('status')||t.includes('crm')) return 'CRM is healthy. 38 new leads this week - 14 from LinkedIn, 12 from referrals, 12 from website. Top converting campaign is the React Developer outreach at 5.8%.';
+    if(t.includes('campaign')) return 'You have 6 active campaigns. Best performer: React Developer outreach at 5.8% conversion. 2 campaigns end this week - want me to prepare renewal suggestions?';
+    if(t.includes('email')) return '120 emails sent today. Open rate 28%, click rate 6.2%. Above industry average. 3 bounces recorded.';
+    if(t.includes('report')) return 'I can generate a Marketing Weekly Summary. It will include lead counts, campaign performance and email metrics. Shall I prepare it?';
+    return 'I can help with CRM data, leads, campaigns and marketing reports. What do you need?';
+  }
+  if(role==='ops') {
+    if(t.includes('status')||t.includes('working')||t.includes('system')) return 'Quick status: SRJ ?, CRM ?, PG Service ? slightly slow, Notification Service  down - engineering team is working on it. All other 8 systems are working normally.';
+    if(t.includes('notification')||t.includes('email')) return 'Notification Service is currently down. This means automated email alerts are delayed. Engineering team is actively fixing it. Estimated resolution: within the hour.';
+    if(t.includes('ticket')||t.includes('issue')||t.includes('raise')) return 'I can raise a ticket. What is the issue? Describe it and I will send it to the engineering team immediately.';
+    if(t.includes('pg')||t.includes('payroll')) return 'PG Payroll Service is slightly slower than normal but still working. Users are not affected yet. Engineering team is monitoring it.';
+    return 'I can tell you if a system is working or help you raise a ticket. I cannot show technical details - those are restricted to engineers. What do you need?';
+  }
+  if(role==='ceo') {
+    if(t.includes('revenue')||t.includes('target')||t.includes('status')) return 'Revenue is at 82% of monthly target. At current pace, we will hit 94-96% by month end. Hiring pipeline has 47 candidates - strongest month this quarter.';
+    if(t.includes('hiring')||t.includes('candidate')||t.includes('interview')) return '47 candidates in pipeline. 12 interviews today, 5 offers accepted this week. Java and React roles have the strongest pipeline. 3 job postings expire this week.';
+    if(t.includes('system')||t.includes('technical')||t.includes('issue')) return 'One technical issue is in progress - engineering team is handling it. No business impact at this time. I will alert you immediately if business operations are affected.';
+    if(t.includes('report')||t.includes('weekly')||t.includes('monthly')) return 'I can generate an Executive Summary Report - revenue vs target, hiring KPIs, pipeline health and system status. Shall I prepare it and email it to you?';
+    return 'I can answer business questions - revenue, hiring, pipeline., reports. Technical infrastructure questions go to the engineering team. What business insight do you need?';
+  }
+  return 'How can I help you?';
+}
+
+function addRoleMsg(container, role, text) {
+  const isJ = role==='j';
+  const t = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+  container.insertAdjacentHTML('beforeend',`<div class="msg ${role}"><div class="msg-av ${role}">${isJ?'J':'?'}</div><div><div class="bubble">${text}</div><div class="msg-time">${t}</div></div></div>`);
+  container.scrollTop = container.scrollHeight;
+}
+
+//  ESCALATION TIMER ---
+let escSeconds = 287; // 4:47
+function runEscalationTimer() {
+  const el = document.getElementById('escTimer');
+  if(!el) return;
+  const iv = setInterval(() => {
+    escSeconds--;
+    if(escSeconds <= 0) {
+      clearInterval(iv);
+      const inc = document.getElementById('inc2041');
+      if(inc) {
+        inc.querySelector('.inc-title').innerHTML += ' <span class="tag" style="background:rgba(255,204,0,0.15);color:var(--yellow);border:1px solid rgba(255,204,0,0.3);">ESCALATED ? BACKUP ADMIN</span>';
+        el.textContent = 'ESCALATED';
+        el.style.color = 'var(--yellow)';
+        showToast('tw','&#x26A0; Escalation Triggered - INC-2041','No approval received in 5 minutes. Incident escalated to Backup Admin. You will still be notified of the outcome.',false);
+      }
+      return;
+    }
+    const m = Math.floor(escSeconds/60), s = escSeconds%60;
+    el.textContent = m+':'+(s<10?'0':'')+s;
+    if(escSeconds < 60) el.style.color = 'var(--red)';
+  }, 1000);
+}
+
+// &#x2713; Approve ACTION (with snapshot + audit) ---
+function approveAction(incId, actionDesc, incNum) {
+  const el = document.getElementById(incId);
+  if(el) {
+    el.style.opacity = '0.6';
+    el.querySelectorAll('button').forEach(b => b.disabled = true);
+    const body = el.querySelector('.inc-body');
+    if(body) body.insertAdjacentHTML('beforeend',
+      `<div style="margin-top:6px;padding:5px 8px;background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.2);border-radius:4px;font-size:11px;color:var(--green);">
+        &#x2713; Approved by Venkatesh N &middot; ${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true})} - Chrome/Windows
+        <span style="margin-left:8px;padding:2px 6px;background:rgba(0,255,136,0.08);border-radius:3px;cursor:pointer;color:var(--text2);" onclick="rollbackAction('${incNum}','${actionDesc}')">Rollback available 24h</span>
+      </div>`
+    );
+  }
+  // Append to audit log
+  const log = document.getElementById('auditLog');
+  if(log) {
+    const t = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+    log.insertAdjacentHTML('afterbegin',
+      `<div class="inc-item"><div class="inc-bar" style="background:var(--green)"></div>
+      <div class="inc-body"><div class="inc-title" style="font-size:12px;">${actionDesc} - <span style="color:var(--green)">APPROVED NOW</span></div>
+      <div class="inc-meta"><span>&#x1F464; Venkatesh N</span><span>&#x1F550; ${t} Jun 11</span><span>&#x1F4BB; Chrome/Windows</span><span>${incNum}</span></div>
+      </div></div>`
+    );
+  }
+  showToast('ts','&#x2705; '+incNum+' - Action Approved','"'+actionDesc+'" - MAX is executing. Pre-action snapshot saved. Rollback available for 24h.',false);
+}
+
+// &#x2717; Deny ACTION ---
+function denyAction(incId) {
+  const el = document.getElementById(incId);
+  if(el) {
+    el.style.opacity = '0.55';
+    el.querySelectorAll('button').forEach(b => b.disabled = true);
+    const body = el.querySelector('.inc-body');
+    if(body) body.insertAdjacentHTML('beforeend',
+      `<div style="margin-top:6px;padding:5px 8px;background:rgba(255,34,68,0.08);border:1px solid rgba(255,34,68,0.2);border-radius:4px;font-size:11px;color:var(--red);">&#x2717; Denied by Venkatesh N - ${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true})} - No action taken</div>`
+    );
+  }
+  showToast('ti','Action Denied - INC logged','MAX has not taken any action. Incident remains open. Manual investigation needed.',false);
+}
+
+//  SNOOZE INCIDENT ---
+function snoozeInc(incId) {
+  const el = document.getElementById(incId);
+  if(el) {
+    el.style.opacity = '0.5';
+    const body = el.querySelector('.inc-body');
+    if(body) body.insertAdjacentHTML('beforeend',
+      `<div style="margin-top:6px;padding:4px 8px;background:rgba(255,204,0,0.07);border:1px solid rgba(255,204,0,0.2);border-radius:4px;font-size:11px;color:var(--yellow);">&#x23F8; Snoozed 15 min - MAX will re-alert at ${new Date(Date.now()+900000).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true})}</div>`
+    );
+    el.querySelectorAll('button').forEach(b => { if(b.textContent.includes('Snooze')) b.disabled=true; });
+  }
+  showToast('ti','&#x2139; Snoozed 15 minutes','MAX will re-raise this alert in 15 minutes if not resolved. False positive? You can tune this threshold in Settings.',false);
+}
+
+//  ROLLBACK ACTION ---
+function rollbackAction(incNum, actionDesc) {
+  if(!confirm(`Rollback "${actionDesc}" from ${incNum}?\n\nMAX will restore the pre-action snapshot. This may briefly affect the service.`)) return;
+  showToast('tw','&#x21A9; Rollback Initiated - '+incNum,`Restoring pre-action snapshot for "${actionDesc}". Service may briefly restart. This will be logged in the audit trail.`,false);
+  const log = document.getElementById('auditLog');
+  if(log) {
+    const t = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+    log.insertAdjacentHTML('afterbegin',
+      `<div class="inc-item"><div class="inc-bar" style="background:var(--orange)"></div>
+      <div class="inc-body"><div class="inc-title" style="font-size:12px;">ROLLBACK: ${actionDesc} <span class="tag tag-h">ROLLBACK</span></div>
+      <div class="inc-meta"><span> Venkatesh N</span><span> ${t} - Jun 11</span><span> Chrome - Windows</span><span> ${incNum}</span></div>
+      </div></div>`
+    );
+  }
+}
+
+function startApp() {
+  updateClock();
+  setInterval(updateClock, 1000);
+  runEscalationTimer(); // start 5-min approval escalation countdown after a delay
+  setTimeout(() => showToast('tc','&#x1F534; Critical - Notification Service','Service is DOWN. DB pool exhausted. Your approval needed to restart.',true), 3000);
+  setTimeout(() => showToast('tw','&#x26A0; PG Service Memory 88%','Predicted failure in ~12 minutes. Approve scale-up?',true), 7000);
+  setTimeout(() => showToast('ti','&#x2139; Hourly Check Complete','11/12 apps healthy. Kafka, Redis, PostgreSQL all OK. 3 AI workers active.',false), 12000);
+}
+
+//  CLOCK 
+function updateClock() {
+  document.getElementById('clock').textContent =
+    new Date().toLocaleTimeString('en-IN',{hour12:false});
+}
+
+//  TABS 
+function showTab(name, el) {
+  ['dash','incidents','apps','business','admin'].forEach(t => {
+    const d = document.getElementById('tab-'+t);
+    if(d) d.style.display = t===name ? 'block' : 'none';
+  });
+  if(el) {
+    document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+  }
+}
+
+//  TOASTS 
+let tc = 0;
+function showToast(type, title, body, actions) {
+  const id = 'toast-'+(++tc);
+  const acts = actions ? `<div class="t-acts"><button class="t-yes" onclick="approveToast('${id}')">&#x2713; Approve</button><button class="t-no" onclick="removeToast('${id}')">&#x2717; Deny</button><button class="t-snooze" onclick="snoozeToast('${id}')">? 15m</button></div>` : '';
+  document.getElementById('toasts').insertAdjacentHTML('beforeend',
+    `<div class="toast ${type}" id="${id}"><div class="t-head"><div class="t-title">${title}</div><div class="t-x" onclick="removeToast('${id}')">?</div></div><div class="t-body">${body}</div>${acts}</div>`
+  );
+  setTimeout(() => removeToast(id), actions ? 15000 : 5000);
+}
+
+function removeToast(id) {
+  const el = document.getElementById(id);
+  if(el) { el.style.opacity='0'; el.style.transform='translateX(110%)'; el.style.transition='all 0.3s'; setTimeout(()=>el.remove(),300); }
+}
+
+function approveToast(id) {
+  removeToast(id);
+  addMsg('j','Action approved. Executing... &#x2705; Completed successfully. Health check passed. Audit log updated with your approval and device info.');
+  showToast('ts','&#x2705; Action Completed','MAX executed the approved fix. Pre-action snapshot saved. Rollback available 24h. Audit log updated.',false);
+}
+
+function snoozeToast(id) {
+  removeToast(id);
+  showToast('ti','&#x2139; Alert Snoozed - 15 Minutes','MAX will re-raise this alert in 15 minutes. To permanently tune this threshold, say "Hey MAX, reduce sensitivity for memory alerts".',false);
+}
+
+//  WAKE MODAL 
+function openWake() {
+  document.getElementById('wakeModal').classList.add('on');
+  setTimeout(() => {
+    closeWake();
+    addMsg('u','Hey MAX, how is production right now?');
+    setTimeout(() => showAnalysis('how is production right now'), 400);
+  }, 4000);
+}
+function closeWake() { document.getElementById('wakeModal').classList.remove('on'); }
+
+//  CHAT 
+function chatKey(e) { if(e.key==='Enter') sendMsg(); }
+
+function sendMsg() {
+  const inp = document.getElementById('chatIn');
+  const t = inp.value.trim(); if(!t) return;
+  inp.value = '';
+  addMsg('u', t);
+  showAnalysis(t);
+}
+
+// Analysis steps shown to user before final answer
+const analysisSteps = [
+  { icon: '', text: 'Reading your question...',            ms: 400  },
+  { icon: '', text: 'Checking live app metrics...',        ms: 900  },
+  { icon: '&#x1F5C4;', text: 'Querying PostgreSQL DB...',           ms: 1500 },
+  { icon: '', text: 'Scanning recent logs...',             ms: 2100 },
+  { icon: '', text: 'Searching knowledge base...',         ms: 2700 },
+  { icon: '?', text: 'Correlating patterns across apps...',  ms: 3200 },
+  { icon: '', text: 'Calculating confidence score...',     ms: 3700 },
+  { icon: '?', text: 'Analysis complete ? forming reply...',ms: 4100 },
+];
+
+function showAnalysis(question) {
+  const c = document.getElementById('chatMsgs');
+  // Insert analysis card
+  c.insertAdjacentHTML('beforeend', `
+    <div class="msg j" id="analysisCard">
+      <div class="msg-av j">M</div>
+      <div style="flex:1">
+        <div class="bubble" id="analysisInner" style="background:rgba(0,20,50,0.6);border:1px solid rgba(0,212,255,0.2);min-width:210px;">
+          <div style="font-size:10px;font-family:'Orbitron',monospace;color:var(--cyan);letter-spacing:1px;margin-bottom:8px;">MAX ANALYZING...</div>
+          <div id="analysisStepsList" style="display:flex;flex-direction:column;gap:5px;"></div>
+          <div style="margin-top:8px;height:3px;background:rgba(255,255,255,0.05);border-radius:2px;overflow:hidden;">
+            <div id="analysisProgressBar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--cyan2),var(--cyan));border-radius:2px;transition:width 0.4s ease;"></div>
+          </div>
+        </div>
+      </div>
+    </div>`);
+  c.scrollTop = c.scrollHeight;
+
+  const stepsList = document.getElementById('analysisStepsList');
+  const progressBar = document.getElementById('analysisProgressBar');
+  const totalSteps = analysisSteps.length;
+
+  analysisSteps.forEach((step, i) => {
+    setTimeout(() => {
+      // Add step
+      stepsList.insertAdjacentHTML('beforeend',
+        `<div id="step_${i}" style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2);opacity:0;transition:opacity 0.3s;">
+          <span style="font-size:13px;">${step.icon}</span>
+          <span>${step.text}</span>
+          <span id="stepDot_${i}" style="margin-left:auto;width:7px;height:7px;border-radius:50%;background:var(--cyan);animation:pulse 0.8s infinite;"></span>
+        </div>`);
+      setTimeout(() => {
+        const el = document.getElementById('step_'+i);
+        if(el) el.style.opacity = '1';
+      }, 50);
+      // Mark previous step done
+      if(i > 0) {
+        const prev = document.getElementById('stepDot_'+(i-1));
+        if(prev) { prev.style.animation='none'; prev.style.background='var(--green)'; }
+      }
+      // Update progress bar
+      progressBar.style.width = Math.round(((i+1)/totalSteps)*100) + '%';
+      c.scrollTop = c.scrollHeight;
+
+      // Last step ? mark done then show reply
+      if(i === totalSteps - 1) {
+        setTimeout(() => {
+          const lastDot = document.getElementById('stepDot_'+(totalSteps-1));
+          if(lastDot) { lastDot.style.animation='none'; lastDot.style.background='var(--green)'; }
+          progressBar.style.width = '100%';
+          // Remove analysis card and show real answer
+          setTimeout(() => {
+            const card = document.getElementById('analysisCard');
+            if(card) card.remove();
+            addMsg('j', getReply(question.toLowerCase()));
+          }, 500);
+        }, 400);
+      }
+    }, step.ms);
+  });
+}
+
+function getReply(t) {
+  if(t.includes('status')||t.includes('how is')||t.includes('production')||t.includes('health'))
+    return 'All 12 apps monitored. 11 healthy, 1 warning (PG 88%), 1 critical down (Notification Service - awaiting your approval). Kafka, Redis, PostgreSQL all operational.';
+  if(t.includes('pg')||t.includes('memory')||t.includes('payroll'))
+    return 'PG Service memory is at 88% and rising. Based on last 30 min data, predicted failure in ~12 min. I recommend scaling. Should I initiate scale-up now?';
+  if(t.includes('notification')||t.includes('down'))
+    return 'Notification Service is down. Root cause: DB connection pool exhausted (50/50). Ready to restart and increase pool to 100. Do you approve?';
+  if(t.includes('srj')||t.includes('slow')||t.includes('recruitment'))
+    return 'SRJ is healthy. Response time 95ms, CPU 23%, memory 41%. The earlier slow query (CandidateSkills index) was resolved at 10:16 AM on your approval. No current issues.';
+  if(t.includes('incident')||t.includes('issue'))
+    return 'Active incidents: 1 Critical (Notification Service DOWN - awaiting your approval), 1 High (PG memory 88%). 2 resolved incidents from today. All logged in audit trail.';
+  if(t.includes('job')||t.includes('posting'))
+    return 'I can create a job posting. What role? I will check your previous postings first and suggest a template.';
+  if(t.includes('candidate')||t.includes('java')||t.includes('react'))
+    return 'Found 47 candidates matching your recent requirements. Java: 23, React: 14, others: 10. Want me to rank top 10 and send interview invitations? Your approval needed before sending.';
+  if(t.includes('report')||t.includes('summary')||t.includes('week'))
+    return 'Available reports: Weekly Hiring Summary, Monthly Revenue vs Target, Incident Analysis Report, Candidate Pipeline. Which one? I can email it to management automatically.';
+  if(t.includes('yes')||t.includes('go ahead')||t.includes('approve')||t.includes('do it'))
+    return '&#x2705; Action approved and executed. Health verification passed. Logged to audit trail with your approval timestamp.';
+  if(t.includes('no')||t.includes('cancel')||t.includes('deny'))
+    return 'Understood. Action denied. Team notified. Incident ticket created. I will continue monitoring and alert you if situation worsens.';
+  if(t.includes('user')||t.includes('team')||t.includes('access'))
+    return 'Current users: You (Super Admin), Ravi Kumar (Developer - SRJ/Auth), Sneha M (Marketing - CRM), Arun S (Operations - read only), Kiran/CEO (Executive - reports). Go to Admin ? User Management to modify.';
+  if(t.includes('audit')||t.includes('log')||t.includes('who'))
+    return 'Last 5 actions in audit log: index created on CandidateSkills, job posting created, interview invitations sent (10), Recruitment API restarted, weekly report generated. All approved by you.';
+  return 'Understood. Checking all 12 monitored applications and knowledge base. Is there a specific application, incident, or business operation you need me to focus on?';
+}
+
+function addMsg(role, text) {
+  const c = document.getElementById('chatMsgs');
+  const t = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+  const isJ = role==='j';
+  c.insertAdjacentHTML('beforeend',`<div class="msg ${role}"><div class="msg-av ${role}">${isJ?'J':'V'}</div><div><div class="bubble">${text}</div><div class="msg-time">${t}</div></div></div>`);
+  c.scrollTop = c.scrollHeight;
+}
+
+function addTyping() {
+  const c = document.getElementById('chatMsgs');
+  c.insertAdjacentHTML('beforeend',`<div class="msg j" id="typing"><div class="msg-av j">M</div><div class="typing"><div class="td"></div><div class="td"></div><div class="td"></div></div></div>`);
+  c.scrollTop = c.scrollHeight;
+}
+function removeTyping() { const t=document.getElementById('typing'); if(t) t.remove(); }
+
+function toggleVoice() {
+  const b = document.getElementById('vBtn');
+  b.classList.toggle('on');
+  if(b.classList.contains('on')) setTimeout(() => { b.classList.remove('on'); openWake(); }, 1500);
+}
+</script>
+<script>
+// Failsafe loader - runs in separate script context
+(function() {
+  function showUsers() {
+    var dl = document.getElementById('dbLoading');
+    var ul = document.getElementById('userList');
+    if (dl) dl.style.display = 'none';
+    if (ul) { ul.style.display = 'block'; ul.style.opacity = '1'; ul.style.visibility = 'visible'; }
+  }
+  setTimeout(showUsers, 1800);
+})();
+</script>
+</body>
+</html>
+

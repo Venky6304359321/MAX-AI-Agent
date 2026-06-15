@@ -1,0 +1,1468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Jarvis — Enterprise AI Platform</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap');
+
+  :root {
+    --bg: #020b18;
+    --bg2: #041225;
+    --bg3: #061a30;
+    --cyan: #00d4ff;
+    --cyan2: #0099cc;
+    --blue: #0066ff;
+    --green: #00ff88;
+    --orange: #ff8800;
+    --red: #ff2244;
+    --yellow: #ffcc00;
+    --text: #c8e6f5;
+    --text2: #6a9ab8;
+    --border: #0d3352;
+    --glow: 0 0 10px rgba(0,212,255,0.3);
+    --glow2: 0 0 20px rgba(0,212,255,0.5);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg2); }
+  ::-webkit-scrollbar-thumb { background: var(--cyan2); border-radius: 2px; }
+
+  /* ── TOP NAV ── */
+  .topnav {
+    position: fixed; top:0; left:0; right:0; z-index:100;
+    height: 56px;
+    background: linear-gradient(90deg, #020b18 0%, #041830 50%, #020b18 100%);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px;
+    box-shadow: 0 2px 20px rgba(0,100,200,0.2);
+  }
+  .topnav-left { display:flex; align-items:center; gap:16px; }
+  .logo {
+    font-family: 'Orbitron', monospace;
+    font-size: 22px; font-weight:900;
+    color: var(--cyan);
+    text-shadow: 0 0 20px var(--cyan), 0 0 40px var(--cyan2);
+    letter-spacing: 4px;
+  }
+  .logo span { color: var(--blue); }
+  .nav-status {
+    display:flex; align-items:center; gap:6px;
+    font-size:11px; color: var(--green);
+    font-family: 'Orbitron', monospace;
+  }
+  .pulse-dot {
+    width:8px; height:8px; border-radius:50%;
+    background: var(--green);
+    animation: pulse 1.5s infinite;
+    box-shadow: 0 0 8px var(--green);
+  }
+  @keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50% { opacity:0.5; transform:scale(0.8); }
+  }
+  .topnav-right { display:flex; align-items:center; gap:20px; }
+  .nav-time {
+    font-family:'Orbitron', monospace; font-size:13px;
+    color: var(--cyan); letter-spacing:2px;
+  }
+  .nav-user { display:flex; align-items:center; gap:8px; }
+  .nav-avatar {
+    width:32px; height:32px; border-radius:50%;
+    background: linear-gradient(135deg, var(--blue), var(--cyan));
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:13px; color:#fff;
+    border: 1px solid var(--cyan);
+    box-shadow: var(--glow);
+  }
+  .nav-username { font-size:13px; color: var(--text); font-weight:600; }
+
+  /* ── LAYOUT ── */
+  .layout {
+    display: grid;
+    grid-template-columns: 220px 1fr 300px;
+    grid-template-rows: calc(100vh - 56px);
+    margin-top: 56px;
+    overflow: hidden;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 20px 0;
+  }
+  .sidebar-section { margin-bottom: 8px; }
+  .sidebar-label {
+    font-family:'Orbitron', monospace; font-size:9px;
+    color: var(--text2); letter-spacing:2px;
+    padding: 8px 20px 4px;
+    text-transform: uppercase;
+  }
+  .sidebar-item {
+    display:flex; align-items:center; gap:10px;
+    padding: 10px 20px; cursor:pointer;
+    border-left: 3px solid transparent;
+    transition: all 0.2s;
+    font-size:13px; font-weight:600;
+    color: var(--text2);
+  }
+  .sidebar-item:hover, .sidebar-item.active {
+    background: rgba(0,212,255,0.05);
+    border-left-color: var(--cyan);
+    color: var(--cyan);
+  }
+  .sidebar-item .icon { font-size:16px; width:20px; text-align:center; }
+  .sidebar-badge {
+    margin-left:auto;
+    background: var(--red);
+    color:#fff; font-size:10px; font-weight:700;
+    padding: 1px 6px; border-radius:10px;
+  }
+  .sidebar-badge.green { background: var(--green); color:#000; }
+  .sidebar-badge.orange { background: var(--orange); color:#000; }
+
+  /* ── MAIN ── */
+  .main { overflow-y:auto; padding:20px; background: var(--bg); }
+
+  /* ── RIGHT PANEL ── */
+  .right-panel {
+    background: var(--bg2);
+    border-left: 1px solid var(--border);
+    display:flex; flex-direction:column;
+    overflow:hidden;
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    position:relative;
+    overflow:hidden;
+  }
+  .card::before {
+    content:'';
+    position:absolute; top:0; left:0; right:0; height:2px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    opacity:0.5;
+  }
+  .card-title {
+    font-family:'Orbitron', monospace; font-size:10px;
+    color: var(--text2); letter-spacing:2px; text-transform:uppercase;
+    margin-bottom:12px;
+  }
+
+  /* ── GRID ── */
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+  .grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:16px; }
+  .grid-4 { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:16px; margin-bottom:16px; }
+
+  /* ── STAT CARDS ── */
+  .stat-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius:8px;
+    padding:16px;
+    position:relative;
+    overflow:hidden;
+  }
+  .stat-card.critical { border-color: rgba(255,34,68,0.4); }
+  .stat-card.critical::before { background: linear-gradient(90deg,transparent,var(--red),transparent); }
+  .stat-card.warning { border-color: rgba(255,136,0,0.4); }
+  .stat-card.warning::before { background: linear-gradient(90deg,transparent,var(--orange),transparent); }
+  .stat-card.good { border-color: rgba(0,255,136,0.4); }
+  .stat-card.good::before { background: linear-gradient(90deg,transparent,var(--green),transparent); }
+  .stat-card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:2px;
+    background: linear-gradient(90deg,transparent,var(--cyan),transparent);
+  }
+  .stat-label { font-size:11px; color:var(--text2); margin-bottom:6px; font-family:'Orbitron',monospace; letter-spacing:1px; }
+  .stat-value { font-family:'Orbitron',monospace; font-size:28px; font-weight:700; color:var(--cyan); }
+  .stat-value.red { color:var(--red); text-shadow:0 0 10px var(--red); }
+  .stat-value.green { color:var(--green); text-shadow:0 0 10px var(--green); }
+  .stat-value.orange { color:var(--orange); text-shadow:0 0 10px var(--orange); }
+  .stat-sub { font-size:11px; color:var(--text2); margin-top:4px; }
+
+  /* ── APP HEALTH TABLE ── */
+  .app-grid {
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:10px;
+    margin-bottom:16px;
+  }
+  .app-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius:6px;
+    padding:12px;
+    cursor:pointer;
+    transition: all 0.2s;
+    position:relative;
+    overflow:hidden;
+  }
+  .app-card:hover { border-color: var(--cyan2); box-shadow: var(--glow); }
+  .app-card.healthy { border-left: 3px solid var(--green); }
+  .app-card.warning { border-left: 3px solid var(--orange); }
+  .app-card.critical { border-left: 3px solid var(--red); }
+  .app-name { font-weight:700; font-size:13px; margin-bottom:6px; }
+  .app-metrics { display:flex; gap:8px; flex-wrap:wrap; }
+  .app-metric { font-size:11px; color:var(--text2); }
+  .app-metric span { color:var(--text); font-weight:600; }
+  .app-metric span.warn { color:var(--orange); }
+  .app-metric span.crit { color:var(--red); }
+  .app-status-dot {
+    width:8px; height:8px; border-radius:50%;
+    position:absolute; top:12px; right:12px;
+  }
+  .app-status-dot.green { background:var(--green); box-shadow:0 0 6px var(--green); animation:pulse 2s infinite; }
+  .app-status-dot.orange { background:var(--orange); box-shadow:0 0 6px var(--orange); animation:pulse 1s infinite; }
+  .app-status-dot.red { background:var(--red); box-shadow:0 0 6px var(--red); animation:pulse 0.5s infinite; }
+
+  /* ── PROGRESS BAR ── */
+  .progress-wrap { margin-bottom:8px; }
+  .progress-header { display:flex; justify-content:space-between; margin-bottom:4px; font-size:12px; }
+  .progress-bar {
+    height:6px; background: rgba(255,255,255,0.05);
+    border-radius:3px; overflow:hidden;
+  }
+  .progress-fill {
+    height:100%; border-radius:3px;
+    background: linear-gradient(90deg, var(--cyan2), var(--cyan));
+    transition: width 1s ease;
+    position:relative;
+  }
+  .progress-fill::after {
+    content:''; position:absolute; right:0; top:0; bottom:0; width:20px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3));
+  }
+  .progress-fill.warn { background: linear-gradient(90deg, #cc6600, var(--orange)); }
+  .progress-fill.crit { background: linear-gradient(90deg, #cc0022, var(--red)); }
+
+  /* ── INCIDENTS ── */
+  .incident-item {
+    display:flex; gap:12px; padding:12px;
+    border-bottom: 1px solid var(--border);
+    cursor:pointer; transition: background 0.2s;
+  }
+  .incident-item:hover { background: rgba(0,212,255,0.03); }
+  .incident-sev {
+    width:4px; border-radius:2px; flex-shrink:0;
+  }
+  .incident-sev.critical { background:var(--red); box-shadow:0 0 6px var(--red); }
+  .incident-sev.high { background:var(--orange); }
+  .incident-sev.medium { background:var(--yellow); }
+  .incident-sev.low { background:var(--green); }
+  .incident-body { flex:1; }
+  .incident-title { font-size:13px; font-weight:600; margin-bottom:3px; }
+  .incident-meta { font-size:11px; color:var(--text2); display:flex; gap:12px; }
+  .incident-tag {
+    font-size:10px; padding:2px 8px; border-radius:10px; font-weight:700;
+    font-family:'Orbitron',monospace;
+  }
+  .incident-tag.critical { background:rgba(255,34,68,0.15); color:var(--red); border:1px solid rgba(255,34,68,0.3); }
+  .incident-tag.high { background:rgba(255,136,0,0.15); color:var(--orange); border:1px solid rgba(255,136,0,0.3); }
+  .incident-tag.resolved { background:rgba(0,255,136,0.1); color:var(--green); border:1px solid rgba(0,255,136,0.3); }
+  .incident-tag.investigating { background:rgba(0,102,255,0.15); color:#66aaff; border:1px solid rgba(0,102,255,0.3); }
+
+  /* ── JARVIS CHAT PANEL ── */
+  .jarvis-panel { display:flex; flex-direction:column; height:100%; }
+  .jarvis-header {
+    padding:16px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(0,50,100,0.3), transparent);
+  }
+  .jarvis-avatar-wrap {
+    display:flex; align-items:center; gap:12px; margin-bottom:12px;
+  }
+  .jarvis-avatar {
+    width:48px; height:48px; border-radius:50%;
+    background: radial-gradient(circle at 30% 30%, #0099ff, #003366);
+    border: 2px solid var(--cyan);
+    box-shadow: 0 0 20px rgba(0,212,255,0.4), 0 0 40px rgba(0,100,255,0.2);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Orbitron',monospace; font-size:16px; font-weight:900;
+    color:var(--cyan);
+    position:relative;
+    animation: avatarGlow 3s infinite;
+  }
+  @keyframes avatarGlow {
+    0%,100% { box-shadow:0 0 20px rgba(0,212,255,0.4), 0 0 40px rgba(0,100,255,0.2); }
+    50% { box-shadow:0 0 30px rgba(0,212,255,0.7), 0 0 60px rgba(0,100,255,0.4); }
+  }
+  .jarvis-avatar-ring {
+    position:absolute; inset:-4px; border-radius:50%;
+    border: 1px solid rgba(0,212,255,0.3);
+    animation: spin 8s linear infinite;
+  }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .jarvis-name { font-family:'Orbitron',monospace; font-size:16px; color:var(--cyan); font-weight:700; }
+  .jarvis-tagline { font-size:11px; color:var(--text2); }
+  .jarvis-indicators { display:flex; gap:8px; }
+  .indicator {
+    display:flex; align-items:center; gap:4px;
+    font-size:10px; color:var(--text2);
+  }
+  .indicator-dot { width:6px; height:6px; border-radius:50%; }
+
+  /* ── CHAT MESSAGES ── */
+  .chat-messages {
+    flex:1; overflow-y:auto; padding:12px;
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .msg { display:flex; gap:8px; max-width:100%; }
+  .msg.user { flex-direction:row-reverse; }
+  .msg-avatar {
+    width:28px; height:28px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:700;
+  }
+  .msg-avatar.jarvis-av {
+    background: radial-gradient(circle at 30% 30%, #0099ff, #003366);
+    color:var(--cyan); border:1px solid var(--cyan);
+    font-family:'Orbitron',monospace;
+  }
+  .msg-avatar.user-av {
+    background: linear-gradient(135deg, var(--blue), var(--cyan));
+    color:#fff;
+  }
+  .msg-bubble {
+    padding:10px 12px; border-radius:12px;
+    font-size:13px; line-height:1.5; max-width:220px;
+  }
+  .msg.jarvis .msg-bubble {
+    background: rgba(0,50,100,0.4);
+    border: 1px solid rgba(0,150,255,0.2);
+    border-top-left-radius:4px;
+    color:var(--text);
+  }
+  .msg.user .msg-bubble {
+    background: rgba(0,100,255,0.2);
+    border: 1px solid rgba(0,100,255,0.3);
+    border-top-right-radius:4px;
+    color:var(--text);
+  }
+  .msg-time { font-size:10px; color:var(--text2); margin-top:4px; }
+  .typing {
+    display:flex; align-items:center; gap:4px; padding:10px 12px;
+    background: rgba(0,50,100,0.4); border:1px solid rgba(0,150,255,0.2);
+    border-radius:12px; border-top-left-radius:4px; width:60px;
+  }
+  .typing-dot {
+    width:6px; height:6px; border-radius:50%;
+    background: var(--cyan); animation: typingBounce 1s infinite;
+  }
+  .typing-dot:nth-child(2) { animation-delay:0.2s; }
+  .typing-dot:nth-child(3) { animation-delay:0.4s; }
+  @keyframes typingBounce {
+    0%,60%,100% { transform:translateY(0); }
+    30% { transform:translateY(-6px); }
+  }
+
+  /* ── CHAT INPUT ── */
+  .chat-input-area {
+    padding:12px;
+    border-top: 1px solid var(--border);
+    background: rgba(2,11,24,0.8);
+  }
+  .chat-input-wrap {
+    display:flex; gap:8px; align-items:center;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius:24px; padding:8px 12px;
+    transition: border-color 0.2s;
+  }
+  .chat-input-wrap:focus-within { border-color: var(--cyan2); box-shadow: var(--glow); }
+  .chat-input {
+    flex:1; background:none; border:none; outline:none;
+    color:var(--text); font-family:'Rajdhani',sans-serif; font-size:13px;
+  }
+  .chat-input::placeholder { color:var(--text2); }
+  .chat-btn {
+    width:28px; height:28px; border-radius:50%; border:none; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    font-size:14px; transition: all 0.2s;
+  }
+  .btn-send {
+    background: linear-gradient(135deg, var(--blue), var(--cyan));
+    color:#fff;
+  }
+  .btn-send:hover { transform:scale(1.1); box-shadow:var(--glow); }
+  .btn-voice {
+    background: rgba(0,255,136,0.1); color:var(--green);
+    border:1px solid rgba(0,255,136,0.3);
+  }
+  .btn-voice:hover { background: rgba(0,255,136,0.2); }
+  .btn-voice.listening {
+    background: rgba(0,255,136,0.2); color:var(--green);
+    animation: voicePulse 1s infinite;
+  }
+  @keyframes voicePulse {
+    0%,100% { box-shadow:0 0 0 0 rgba(0,255,136,0.4); }
+    50% { box-shadow:0 0 0 8px rgba(0,255,136,0); }
+  }
+
+  /* ── NOTIFICATION TOAST ── */
+  .toast-container {
+    position:fixed; top:68px; right:16px; z-index:999;
+    display:flex; flex-direction:column; gap:8px;
+    pointer-events:none;
+  }
+  .toast {
+    background: var(--bg3);
+    border-radius:8px; padding:14px 16px;
+    width:320px; pointer-events:all;
+    animation: toastIn 0.3s ease;
+    position:relative; overflow:hidden;
+  }
+  .toast::before {
+    content:''; position:absolute; left:0; top:0; bottom:0; width:4px;
+  }
+  .toast.critical { border:1px solid rgba(255,34,68,0.4); }
+  .toast.critical::before { background:var(--red); box-shadow:0 0 10px var(--red); }
+  .toast.warning { border:1px solid rgba(255,136,0,0.4); }
+  .toast.warning::before { background:var(--orange); }
+  .toast.info { border:1px solid rgba(0,212,255,0.3); }
+  .toast.info::before { background:var(--cyan); }
+  @keyframes toastIn {
+    from { transform:translateX(100%); opacity:0; }
+    to { transform:translateX(0); opacity:1; }
+  }
+  .toast-title { font-weight:700; font-size:13px; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center; }
+  .toast-body { font-size:12px; color:var(--text2); line-height:1.5; }
+  .toast-close { cursor:pointer; color:var(--text2); font-size:16px; line-height:1; }
+  .toast-close:hover { color:var(--text); }
+  .toast-actions { display:flex; gap:8px; margin-top:10px; }
+  .toast-btn {
+    flex:1; padding:6px; border-radius:4px; border:none; cursor:pointer;
+    font-family:'Rajdhani',sans-serif; font-size:12px; font-weight:700;
+    transition:all 0.2s;
+  }
+  .toast-btn.approve { background:rgba(0,255,136,0.15); color:var(--green); border:1px solid rgba(0,255,136,0.3); }
+  .toast-btn.approve:hover { background:rgba(0,255,136,0.25); }
+  .toast-btn.deny { background:rgba(255,34,68,0.1); color:var(--red); border:1px solid rgba(255,34,68,0.2); }
+  .toast-btn.deny:hover { background:rgba(255,34,68,0.2); }
+
+  /* ── SECTION HEADER ── */
+  .section-header {
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:16px;
+  }
+  .section-title {
+    font-family:'Orbitron',monospace; font-size:12px;
+    color:var(--cyan); letter-spacing:2px; text-transform:uppercase;
+  }
+  .section-action {
+    font-size:11px; color:var(--cyan2); cursor:pointer;
+    padding:4px 10px; border:1px solid var(--border); border-radius:4px;
+    transition:all 0.2s;
+  }
+  .section-action:hover { border-color:var(--cyan2); color:var(--cyan); }
+
+  /* ── CHART BARS (fake sparkline) ── */
+  .mini-chart { display:flex; align-items:flex-end; gap:2px; height:32px; }
+  .mini-bar {
+    flex:1; background:rgba(0,212,255,0.3); border-radius:2px 2px 0 0;
+    transition:height 0.5s;
+  }
+  .mini-bar.active { background:var(--cyan); }
+
+  /* ── JARVIS VOICE INDICATOR ── */
+  .voice-indicator {
+    display:flex; align-items:center; justify-content:center; gap:4px;
+    padding:8px; background:rgba(0,255,136,0.05);
+    border:1px solid rgba(0,255,136,0.2); border-radius:6px;
+    margin-bottom:12px; font-size:11px; color:var(--green);
+    font-family:'Orbitron',monospace;
+  }
+  .voice-bars { display:flex; align-items:center; gap:2px; height:16px; }
+  .voice-bar {
+    width:3px; background:var(--green); border-radius:1px;
+    animation: voiceBar 0.8s ease infinite;
+  }
+  .voice-bar:nth-child(1) { height:6px; animation-delay:0s; }
+  .voice-bar:nth-child(2) { height:12px; animation-delay:0.1s; }
+  .voice-bar:nth-child(3) { height:16px; animation-delay:0.2s; }
+  .voice-bar:nth-child(4) { height:10px; animation-delay:0.3s; }
+  .voice-bar:nth-child(5) { height:6px; animation-delay:0.4s; }
+  @keyframes voiceBar {
+    0%,100% { transform:scaleY(0.5); }
+    50% { transform:scaleY(1); }
+  }
+
+  /* ── MORNING BRIEF ── */
+  .morning-brief {
+    background: linear-gradient(135deg, rgba(0,50,100,0.4), rgba(0,20,50,0.6));
+    border: 1px solid rgba(0,150,255,0.3);
+    border-radius:8px; padding:16px; margin-bottom:16px;
+    position:relative; overflow:hidden;
+  }
+  .morning-brief::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:2px;
+    background: linear-gradient(90deg, var(--blue), var(--cyan), var(--blue));
+  }
+  .brief-header { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .brief-icon { font-size:24px; }
+  .brief-title { font-family:'Orbitron',monospace; font-size:13px; color:var(--cyan); }
+  .brief-subtitle { font-size:11px; color:var(--text2); }
+  .brief-items { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .brief-item { display:flex; align-items:center; gap:8px; font-size:12px; }
+  .brief-item-icon { font-size:14px; width:20px; text-align:center; }
+
+  /* ── PAGE TABS ── */
+  .page-tabs { display:flex; gap:4px; margin-bottom:20px; }
+  .page-tab {
+    padding:7px 16px; border-radius:4px; cursor:pointer;
+    font-size:12px; font-weight:600; transition:all 0.2s;
+    border:1px solid var(--border); color:var(--text2);
+    font-family:'Rajdhani',sans-serif;
+  }
+  .page-tab:hover { border-color:var(--cyan2); color:var(--cyan); }
+  .page-tab.active {
+    background:rgba(0,212,255,0.1); border-color:var(--cyan);
+    color:var(--cyan);
+  }
+
+  /* ── SCANNING LINE ── */
+  .scan-line {
+    position:fixed; top:0; left:0; right:0; height:2px;
+    background: linear-gradient(90deg, transparent 0%, var(--cyan) 50%, transparent 100%);
+    opacity:0.3; pointer-events:none;
+    animation: scanMove 4s linear infinite;
+  }
+  @keyframes scanMove {
+    0% { transform:translateY(0); }
+    100% { transform:translateY(100vh); }
+  }
+
+  /* ── CORNER DECORATIONS ── */
+  .corner-deco {
+    position:fixed; width:60px; height:60px; pointer-events:none; opacity:0.3;
+  }
+  .corner-deco.tl { top:60px; left:0; border-top:2px solid var(--cyan); border-left:2px solid var(--cyan); }
+  .corner-deco.tr { top:60px; right:0; border-top:2px solid var(--cyan); border-right:2px solid var(--cyan); }
+  .corner-deco.bl { bottom:0; left:0; border-bottom:2px solid var(--cyan); border-left:2px solid var(--cyan); }
+  .corner-deco.br { bottom:0; right:0; border-bottom:2px solid var(--cyan); border-right:2px solid var(--cyan); }
+
+  /* ── WAKE WORD MODAL ── */
+  .wake-modal {
+    display:none; position:fixed; inset:0; z-index:999;
+    background:rgba(2,11,24,0.9);
+    align-items:center; justify-content:center;
+    flex-direction:column; gap:24px;
+    backdrop-filter:blur(4px);
+  }
+  .wake-modal.show { display:flex; }
+  .wake-circle {
+    width:160px; height:160px; border-radius:50%;
+    background: radial-gradient(circle at center, rgba(0,212,255,0.2), transparent);
+    border:2px solid var(--cyan);
+    box-shadow:0 0 40px rgba(0,212,255,0.4), 0 0 80px rgba(0,100,255,0.2);
+    display:flex; align-items:center; justify-content:center;
+    animation: wakeGlow 2s infinite;
+    position:relative;
+  }
+  @keyframes wakeGlow {
+    0%,100% { box-shadow:0 0 40px rgba(0,212,255,0.4); }
+    50% { box-shadow:0 0 60px rgba(0,212,255,0.7), 0 0 100px rgba(0,100,255,0.4); }
+  }
+  .wake-circle-inner {
+    font-family:'Orbitron',monospace; font-size:28px; font-weight:900;
+    color:var(--cyan); text-shadow:0 0 20px var(--cyan);
+  }
+  .wake-ring {
+    position:absolute; inset:-12px; border-radius:50%;
+    border:1px solid rgba(0,212,255,0.3);
+    animation:spin 4s linear infinite;
+  }
+  .wake-ring2 {
+    position:absolute; inset:-24px; border-radius:50%;
+    border:1px dashed rgba(0,212,255,0.15);
+    animation:spin 8s linear infinite reverse;
+  }
+  .wake-text { font-family:'Orbitron',monospace; font-size:18px; color:var(--cyan); letter-spacing:4px; }
+  .wake-subtitle { font-size:13px; color:var(--text2); }
+  .wake-voice-bars { display:flex; align-items:center; gap:4px; height:40px; }
+  .wake-voice-bar {
+    width:4px; background:var(--cyan); border-radius:2px;
+    animation:voiceBar 0.6s ease infinite;
+  }
+  .wake-voice-bar:nth-child(1) { height:10px; animation-delay:0s; }
+  .wake-voice-bar:nth-child(2) { height:24px; animation-delay:0.08s; }
+  .wake-voice-bar:nth-child(3) { height:36px; animation-delay:0.16s; }
+  .wake-voice-bar:nth-child(4) { height:28px; animation-delay:0.24s; }
+  .wake-voice-bar:nth-child(5) { height:40px; animation-delay:0.32s; }
+  .wake-voice-bar:nth-child(6) { height:28px; animation-delay:0.40s; }
+  .wake-voice-bar:nth-child(7) { height:36px; animation-delay:0.48s; }
+  .wake-voice-bar:nth-child(8) { height:20px; animation-delay:0.56s; }
+  .wake-voice-bar:nth-child(9) { height:10px; animation-delay:0.64s; }
+  .wake-close {
+    padding:10px 28px; border-radius:4px; cursor:pointer;
+    background:rgba(255,255,255,0.05); border:1px solid var(--border);
+    color:var(--text2); font-family:'Rajdhani',sans-serif; font-size:13px;
+    transition:all 0.2s;
+  }
+  .wake-close:hover { border-color:var(--red); color:var(--red); }
+
+  /* ── SCROLLABLE AREAS ── */
+  .scroll-area { overflow-y:auto; }
+
+  /* ── BUTTON ── */
+  .btn {
+    padding:8px 16px; border-radius:4px; border:none; cursor:pointer;
+    font-family:'Rajdhani',sans-serif; font-size:13px; font-weight:700;
+    transition:all 0.2s; letter-spacing:1px;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--blue), var(--cyan2));
+    color:#fff; box-shadow:0 0 10px rgba(0,100,255,0.3);
+  }
+  .btn-primary:hover { box-shadow:0 0 20px rgba(0,100,255,0.5); transform:translateY(-1px); }
+  .btn-ghost { background:transparent; color:var(--cyan); border:1px solid var(--cyan2); }
+  .btn-ghost:hover { background:rgba(0,212,255,0.05); }
+
+  /* Responsive notice */
+  @media(max-width:900px) {
+    .layout { grid-template-columns:1fr; }
+    .sidebar, .right-panel { display:none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Scan line effect -->
+<div class="scan-line"></div>
+
+<!-- Corner decorations -->
+<div class="corner-deco tl"></div>
+<div class="corner-deco tr"></div>
+<div class="corner-deco bl"></div>
+<div class="corner-deco br"></div>
+
+<!-- ═══════════════════════════════════ TOP NAV ═══════════════════════════════════ -->
+<nav class="topnav">
+  <div class="topnav-left">
+    <div class="logo">J<span>A</span>RVIS</div>
+    <div class="nav-status">
+      <div class="pulse-dot"></div>
+      ALL SYSTEMS OPERATIONAL
+    </div>
+  </div>
+  <div class="topnav-right">
+    <div class="nav-time" id="navTime">00:00:00</div>
+    <div class="nav-user">
+      <div class="nav-avatar">V</div>
+      <div class="nav-username">Venkatesh</div>
+    </div>
+    <button class="btn btn-primary" onclick="showWakeModal()" style="font-size:11px;padding:6px 14px;">
+      🎤 Hey Jarvis
+    </button>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════ LAYOUT ═══════════════════════════════════ -->
+<div class="layout">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Overview</div>
+      <div class="sidebar-item active" onclick="setTab('dashboard')">
+        <span class="icon">⬡</span> Dashboard
+      </div>
+      <div class="sidebar-item" onclick="setTab('apps')">
+        <span class="icon">◈</span> Applications
+        <span class="sidebar-badge orange">1</span>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Monitoring</div>
+      <div class="sidebar-item" onclick="setTab('incidents')">
+        <span class="icon">⚡</span> Incidents
+        <span class="sidebar-badge">2</span>
+      </div>
+      <div class="sidebar-item" onclick="setTab('incidents')">
+        <span class="icon">◉</span> Metrics
+      </div>
+      <div class="sidebar-item" onclick="setTab('incidents')">
+        <span class="icon">≡</span> Logs
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Business AI</div>
+      <div class="sidebar-item" onclick="setTab('business')">
+        <span class="icon">✦</span> Job Postings
+      </div>
+      <div class="sidebar-item" onclick="setTab('business')">
+        <span class="icon">◎</span> Candidates
+        <span class="sidebar-badge green">47</span>
+      </div>
+      <div class="sidebar-item" onclick="setTab('business')">
+        <span class="icon">⊡</span> Interviews
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Reports</div>
+      <div class="sidebar-item" onclick="setTab('business')">
+        <span class="icon">▣</span> Analytics
+      </div>
+      <div class="sidebar-item" onclick="setTab('business')">
+        <span class="icon">⊞</span> Weekly Report
+      </div>
+    </div>
+
+    <!-- Mini system health -->
+    <div style="padding:16px; margin-top:auto; border-top:1px solid var(--border);">
+      <div class="card-title" style="margin-bottom:10px;">System Health</div>
+      <div class="progress-wrap">
+        <div class="progress-header"><span style="font-size:11px;color:var(--text2)">AI Workers</span><span style="font-size:11px;color:var(--green)">3/3</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-header"><span style="font-size:11px;color:var(--text2)">Kafka</span><span style="font-size:11px;color:var(--green)">OK</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-header"><span style="font-size:11px;color:var(--text2)">PostgreSQL</span><span style="font-size:11px;color:var(--green)">OK</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-header"><span style="font-size:11px;color:var(--text2)">Redis Cache</span><span style="font-size:11px;color:var(--green)">OK</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── MAIN CONTENT ── -->
+  <main class="main" id="mainContent">
+
+    <!-- DASHBOARD TAB -->
+    <div id="tab-dashboard">
+
+      <!-- Morning Brief -->
+      <div class="morning-brief">
+        <div class="brief-header">
+          <div class="brief-icon">🌅</div>
+          <div>
+            <div class="brief-title">Good Morning, Venkatesh</div>
+            <div class="brief-subtitle">Here's your enterprise summary for today — June 11, 2026</div>
+          </div>
+        </div>
+        <div class="brief-items">
+          <div class="brief-item"><span class="brief-item-icon">✅</span> 2 critical incidents resolved overnight</div>
+          <div class="brief-item"><span class="brief-item-icon">📅</span> 12 interviews scheduled today</div>
+          <div class="brief-item"><span class="brief-item-icon">🎉</span> 5 candidates accepted offers</div>
+          <div class="brief-item"><span class="brief-item-icon">⚠️</span> 3 job postings expire this week</div>
+          <div class="brief-item"><span class="brief-item-icon">📈</span> Revenue target at 82%</div>
+          <div class="brief-item"><span class="brief-item-icon">🗄️</span> 1 database needs maintenance</div>
+        </div>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="grid-4">
+        <div class="stat-card good">
+          <div class="stat-label">Apps Online</div>
+          <div class="stat-value green">11<span style="font-size:16px;color:var(--text2)">/12</span></div>
+          <div class="stat-sub">1 warning state</div>
+        </div>
+        <div class="stat-card critical">
+          <div class="stat-label">Active Incidents</div>
+          <div class="stat-value red">2</div>
+          <div class="stat-sub">1 critical · 1 high</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Avg Response</div>
+          <div class="stat-value" style="font-size:22px">118<span style="font-size:14px;color:var(--text2)">ms</span></div>
+          <div class="stat-sub" style="color:var(--green)">▲ Normal range</div>
+        </div>
+        <div class="stat-card warning">
+          <div class="stat-label">PG Memory</div>
+          <div class="stat-value orange">88<span style="font-size:14px">%</span></div>
+          <div class="stat-sub" style="color:var(--orange)">⚠ Action needed</div>
+        </div>
+      </div>
+
+      <!-- Applications Grid -->
+      <div class="section-header">
+        <div class="section-title">Application Health</div>
+        <div class="section-action">View All →</div>
+      </div>
+      <div class="app-grid">
+        <div class="app-card healthy" onclick="showIncidentToast()">
+          <div class="app-status-dot green"></div>
+          <div class="app-name">SRJ — Recruitment Platform</div>
+          <div class="app-metrics">
+            <div class="app-metric">CPU <span>23%</span></div>
+            <div class="app-metric">MEM <span>41%</span></div>
+            <div class="app-metric">RT <span>95ms</span></div>
+          </div>
+        </div>
+        <div class="app-card warning" onclick="showWarningToast()">
+          <div class="app-status-dot orange"></div>
+          <div class="app-name">PG — Payroll Service</div>
+          <div class="app-metrics">
+            <div class="app-metric">CPU <span>61%</span></div>
+            <div class="app-metric">MEM <span class="warn">88%</span></div>
+            <div class="app-metric">RT <span class="warn">340ms</span></div>
+          </div>
+        </div>
+        <div class="app-card healthy">
+          <div class="app-status-dot green"></div>
+          <div class="app-name">CRM — Customer Platform</div>
+          <div class="app-metrics">
+            <div class="app-metric">CPU <span>18%</span></div>
+            <div class="app-metric">MEM <span>34%</span></div>
+            <div class="app-metric">RT <span>78ms</span></div>
+          </div>
+        </div>
+        <div class="app-card critical">
+          <div class="app-status-dot red"></div>
+          <div class="app-name">Notification Service</div>
+          <div class="app-metrics">
+            <div class="app-metric">CPU <span class="crit">N/A</span></div>
+            <div class="app-metric">MEM <span class="crit">DOWN</span></div>
+            <div class="app-metric">RT <span class="crit">Timeout</span></div>
+          </div>
+        </div>
+        <div class="app-card healthy">
+          <div class="app-status-dot green"></div>
+          <div class="app-name">Auth Service</div>
+          <div class="app-metrics">
+            <div class="app-metric">CPU <span>12%</span></div>
+            <div class="app-metric">MEM <span>28%</span></div>
+            <div class="app-metric">RT <span>45ms</span></div>
+          </div>
+        </div>
+        <div class="app-card healthy">
+          <div class="app-status-dot green"></div>
+          <div class="app-name">File Storage Service</div>
+          <div class="app-metrics">
+            <div class="app-metric">CPU <span>8%</span></div>
+            <div class="app-metric">MEM <span>22%</span></div>
+            <div class="app-metric">RT <span>112ms</span></div>
+          </div>
+        </div>
+        <div class="app-card healthy">
+          <div class="app-status-dot green"></div>
+          <div class="app-name">Email Gateway</div>
+          <div class="app-metrics">
+            <div class="app-metric">CPU <span>5%</span></div>
+            <div class="app-metric">MEM <span>19%</span></div>
+            <div class="app-metric">RT <span>88ms</span></div>
+          </div>
+        </div>
+        <div class="app-card healthy">
+          <div class="app-status-dot green"></div>
+          <div class="app-name">Report Engine</div>
+          <div class="app-metrics">
+            <div class="app-metric">CPU <span>31%</span></div>
+            <div class="app-metric">MEM <span>55%</span></div>
+            <div class="app-metric">RT <span>203ms</span></div>
+          </div>
+        </div>
+        <div class="app-card healthy">
+          <div class="app-status-dot green"></div>
+          <div class="app-name">API Gateway</div>
+          <div class="app-metrics">
+            <div class="app-metric">CPU <span>44%</span></div>
+            <div class="app-metric">MEM <span>48%</span></div>
+            <div class="app-metric">RT <span>22ms</span></div>
+          </div>
+        </div>
+        <div class="app-card healthy">
+          <div class="app-status-dot green"></div>
+          <div class="app-name">Interview Scheduler</div>
+          <div class="app-metrics">
+            <div class="app-metric">CPU <span>9%</span></div>
+            <div class="app-metric">MEM <span>31%</span></div>
+            <div class="app-metric">RT <span>67ms</span></div>
+          </div>
+        </div>
+        <div class="app-card healthy">
+          <div class="app-status-dot green"></div>
+          <div class="app-name">Resume Parser</div>
+          <div class="app-metrics">
+            <div class="app-metric">CPU <span>27%</span></div>
+            <div class="app-metric">MEM <span>43%</span></div>
+            <div class="app-metric">RT <span>156ms</span></div>
+          </div>
+        </div>
+        <div class="app-card healthy">
+          <div class="app-status-dot green"></div>
+          <div class="app-name">Analytics Dashboard</div>
+          <div class="app-metrics">
+            <div class="app-metric">CPU <span>15%</span></div>
+            <div class="app-metric">MEM <span>37%</span></div>
+            <div class="app-metric">RT <span>134ms</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Incidents -->
+      <div class="section-header">
+        <div class="section-title">Active Incidents</div>
+        <div class="section-action">View All →</div>
+      </div>
+      <div class="card" style="margin-bottom:16px;padding:0;overflow:hidden;">
+        <div class="incident-item">
+          <div class="incident-sev critical"></div>
+          <div class="incident-body">
+            <div class="incident-title" style="display:flex;align-items:center;gap:8px;">
+              Notification Service is DOWN
+              <span class="incident-tag critical">CRITICAL</span>
+              <span class="incident-tag investigating">INVESTIGATING</span>
+            </div>
+            <div class="incident-meta">
+              <span>2 mins ago</span>
+              <span>Root cause: DB connection pool exhausted</span>
+              <span>Jarvis awaiting approval to restart</span>
+            </div>
+          </div>
+          <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;" onclick="showApprovalToast()">Review →</button>
+        </div>
+        <div class="incident-item">
+          <div class="incident-sev high"></div>
+          <div class="incident-body">
+            <div class="incident-title" style="display:flex;align-items:center;gap:8px;">
+              PG Service memory approaching critical
+              <span class="incident-tag high">HIGH</span>
+            </div>
+            <div class="incident-meta">
+              <span>8 mins ago</span>
+              <span>Memory at 88% — predicted failure in ~12 min</span>
+              <span>Recommend: scale service</span>
+            </div>
+          </div>
+          <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;" onclick="showWarningToast()">Review →</button>
+        </div>
+        <div class="incident-item" style="opacity:0.6;">
+          <div class="incident-sev" style="background:var(--green)"></div>
+          <div class="incident-body">
+            <div class="incident-title" style="display:flex;align-items:center;gap:8px;">
+              SRJ slow query — CandidateSkills table
+              <span class="incident-tag resolved">RESOLVED</span>
+            </div>
+            <div class="incident-meta">
+              <span>2 hrs ago</span>
+              <span>Index created on approval — resolved in 4 min</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Metrics Row -->
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">SRJ Response Time (last 12 readings)</div>
+          <div class="mini-chart">
+            <div class="mini-bar" style="height:40%"></div>
+            <div class="mini-bar" style="height:55%"></div>
+            <div class="mini-bar" style="height:45%"></div>
+            <div class="mini-bar" style="height:60%"></div>
+            <div class="mini-bar" style="height:50%"></div>
+            <div class="mini-bar" style="height:70%"></div>
+            <div class="mini-bar" style="height:55%"></div>
+            <div class="mini-bar" style="height:48%"></div>
+            <div class="mini-bar" style="height:52%"></div>
+            <div class="mini-bar" style="height:45%"></div>
+            <div class="mini-bar" style="height:50%"></div>
+            <div class="mini-bar active" style="height:58%"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:var(--text2)">
+            <span>Avg: 95ms</span><span>Peak: 134ms</span><span style="color:var(--green)">✓ Normal</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">PG Memory Usage (last 12 readings)</div>
+          <div class="mini-chart">
+            <div class="mini-bar" style="height:60%;background:rgba(255,136,0,0.3)"></div>
+            <div class="mini-bar" style="height:62%;background:rgba(255,136,0,0.3)"></div>
+            <div class="mini-bar" style="height:65%;background:rgba(255,136,0,0.3)"></div>
+            <div class="mini-bar" style="height:68%;background:rgba(255,136,0,0.3)"></div>
+            <div class="mini-bar" style="height:70%;background:rgba(255,136,0,0.3)"></div>
+            <div class="mini-bar" style="height:74%;background:rgba(255,136,0,0.3)"></div>
+            <div class="mini-bar" style="height:77%;background:rgba(255,136,0,0.4)"></div>
+            <div class="mini-bar" style="height:79%;background:rgba(255,136,0,0.5)"></div>
+            <div class="mini-bar" style="height:82%;background:rgba(255,136,0,0.6)"></div>
+            <div class="mini-bar" style="height:84%;background:rgba(255,136,0,0.7)"></div>
+            <div class="mini-bar" style="height:86%;background:rgba(255,136,0,0.8)"></div>
+            <div class="mini-bar" style="height:88%;background:var(--orange)"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:var(--text2)">
+            <span>Current: 88%</span><span>Trend: ↑ Rising</span><span style="color:var(--orange)">⚠ Action needed</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end dashboard tab -->
+
+    <!-- INCIDENTS TAB -->
+    <div id="tab-incidents" style="display:none">
+      <div class="section-header">
+        <div class="section-title">All Incidents</div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div class="incident-item">
+          <div class="incident-sev critical"></div>
+          <div class="incident-body">
+            <div class="incident-title">Notification Service DOWN — DB connection pool exhausted</div>
+            <div class="incident-meta"><span>INC-2041</span><span>2 mins ago</span><span>Jarvis awaiting approval</span></div>
+          </div>
+          <span class="incident-tag critical">CRITICAL</span>
+        </div>
+        <div class="incident-item">
+          <div class="incident-sev high"></div>
+          <div class="incident-body">
+            <div class="incident-title">PG Service memory at 88% — failure predicted</div>
+            <div class="incident-meta"><span>INC-2040</span><span>8 mins ago</span><span>Monitoring</span></div>
+          </div>
+          <span class="incident-tag high">HIGH</span>
+        </div>
+        <div class="incident-item" style="opacity:0.6">
+          <div class="incident-sev" style="background:var(--green)"></div>
+          <div class="incident-body">
+            <div class="incident-title">SRJ slow queries — CandidateSkills missing index</div>
+            <div class="incident-meta"><span>INC-2039</span><span>2 hrs ago</span><span>Resolved in 4 min after approval</span></div>
+          </div>
+          <span class="incident-tag resolved">RESOLVED</span>
+        </div>
+        <div class="incident-item" style="opacity:0.6">
+          <div class="incident-sev" style="background:var(--green)"></div>
+          <div class="incident-body">
+            <div class="incident-title">Recruitment API timeout — overnight</div>
+            <div class="incident-meta"><span>INC-2038</span><span>8 hrs ago</span><span>Auto-healed after approval</span></div>
+          </div>
+          <span class="incident-tag resolved">RESOLVED</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BUSINESS TAB -->
+    <div id="tab-business" style="display:none">
+      <div class="section-header">
+        <div class="section-title">Business AI — Recent Actions</div>
+      </div>
+      <div class="grid-3">
+        <div class="stat-card">
+          <div class="stat-label">Active Job Postings</div>
+          <div class="stat-value" style="font-size:22px">14</div>
+          <div class="stat-sub" style="color:var(--orange)">3 expiring soon</div>
+        </div>
+        <div class="stat-card good">
+          <div class="stat-label">Candidates Matched</div>
+          <div class="stat-value green" style="font-size:22px">47</div>
+          <div class="stat-sub">Java: 23 · React: 14 · Other: 10</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Interviews Today</div>
+          <div class="stat-value" style="font-size:22px">12</div>
+          <div class="stat-sub">5 completed · 7 upcoming</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Recent Jarvis Actions</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;gap:12px;align-items:flex-start;padding:10px;background:rgba(0,255,136,0.05);border-radius:4px;border:1px solid rgba(0,255,136,0.1)">
+            <span style="font-size:18px">✅</span>
+            <div>
+              <div style="font-size:13px;font-weight:600">Java Developer job posting created</div>
+              <div style="font-size:11px;color:var(--text2)">Used previous template · 5 yrs exp · Bangalore · Approved by Venkatesh · 10:32 AM</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start;padding:10px;background:rgba(0,212,255,0.05);border-radius:4px;border:1px solid rgba(0,212,255,0.1)">
+            <span style="font-size:18px">📧</span>
+            <div>
+              <div style="font-size:13px;font-weight:600">Interview invitations sent to 10 candidates</div>
+              <div style="font-size:11px;color:var(--text2)">React Developer role · Ranked by skill score · Approved by Venkatesh · 9:15 AM</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start;padding:10px;background:rgba(255,136,0,0.05);border-radius:4px;border:1px solid rgba(255,136,0,0.1)">
+            <span style="font-size:18px">📊</span>
+            <div>
+              <div style="font-size:13px;font-weight:600">Weekly hiring report generated</div>
+              <div style="font-size:11px;color:var(--text2)">Requested by voice · Emailed to management team · 8:00 AM</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- APPS TAB -->
+    <div id="tab-apps" style="display:none">
+      <div class="section-header"><div class="section-title">All Applications (12)</div></div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-title">Resource Usage — All Apps</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div class="progress-wrap"><div class="progress-header"><span>SRJ</span><span style="color:var(--green)">CPU 23% · MEM 41%</span></div><div class="progress-bar"><div class="progress-fill" style="width:23%"></div></div></div>
+          <div class="progress-wrap"><div class="progress-header"><span>PG Service</span><span style="color:var(--orange)">CPU 61% · MEM 88%</span></div><div class="progress-bar"><div class="progress-fill warn" style="width:88%"></div></div></div>
+          <div class="progress-wrap"><div class="progress-header"><span>CRM</span><span style="color:var(--green)">CPU 18% · MEM 34%</span></div><div class="progress-bar"><div class="progress-fill" style="width:18%"></div></div></div>
+          <div class="progress-wrap"><div class="progress-header"><span>Notification Service</span><span style="color:var(--red)">DOWN</span></div><div class="progress-bar"><div class="progress-fill crit" style="width:100%"></div></div></div>
+          <div class="progress-wrap"><div class="progress-header"><span>Auth Service</span><span style="color:var(--green)">CPU 12% · MEM 28%</span></div><div class="progress-bar"><div class="progress-fill" style="width:12%"></div></div></div>
+          <div class="progress-wrap"><div class="progress-header"><span>API Gateway</span><span style="color:var(--green)">CPU 44% · MEM 48%</span></div><div class="progress-bar"><div class="progress-fill" style="width:44%"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+  </main><!-- end main -->
+
+  <!-- ── RIGHT PANEL — JARVIS CHAT ── -->
+  <aside class="right-panel">
+    <div class="jarvis-panel">
+
+      <!-- Header -->
+      <div class="jarvis-header">
+        <div class="jarvis-avatar-wrap">
+          <div class="jarvis-avatar">
+            J
+            <div class="jarvis-avatar-ring"></div>
+          </div>
+          <div>
+            <div class="jarvis-name">JARVIS</div>
+            <div class="jarvis-tagline">Enterprise AI Assistant · Online</div>
+          </div>
+        </div>
+        <div class="jarvis-indicators">
+          <div class="indicator">
+            <div class="indicator-dot" style="background:var(--green);box-shadow:0 0 4px var(--green)"></div>
+            <span>Monitoring</span>
+          </div>
+          <div class="indicator">
+            <div class="indicator-dot" style="background:var(--cyan);box-shadow:0 0 4px var(--cyan)"></div>
+            <span>Voice Ready</span>
+          </div>
+          <div class="indicator">
+            <div class="indicator-dot" style="background:var(--blue);box-shadow:0 0 4px var(--blue)"></div>
+            <span>Learning</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div class="chat-messages scroll-area" id="chatMessages">
+
+        <div class="msg jarvis">
+          <div class="msg-avatar jarvis-av">J</div>
+          <div>
+            <div class="msg-bubble">Good morning, Venkatesh. I have completed the overnight monitoring. All 12 applications are running. 2 incidents need your attention — 1 critical, 1 high priority. Shall I brief you?</div>
+            <div class="msg-time">09:00 AM</div>
+          </div>
+        </div>
+
+        <div class="msg user">
+          <div class="msg-avatar user-av">V</div>
+          <div>
+            <div class="msg-bubble">Yes, brief me on the critical one first.</div>
+            <div class="msg-time">09:01 AM</div>
+          </div>
+        </div>
+
+        <div class="msg jarvis">
+          <div class="msg-avatar jarvis-av">J</div>
+          <div>
+            <div class="msg-bubble">Notification Service is down. Root cause: database connection pool exhausted — all 50 connections are in use. The service is not responding to health checks. I recommend restarting the service and increasing the pool size. Should I proceed?</div>
+            <div class="msg-time">09:01 AM</div>
+          </div>
+        </div>
+
+        <div class="msg user">
+          <div class="msg-avatar user-av">V</div>
+          <div>
+            <div class="msg-bubble">Yes, restart it.</div>
+            <div class="msg-time">09:02 AM</div>
+          </div>
+        </div>
+
+        <div class="msg jarvis">
+          <div class="msg-avatar jarvis-av">J</div>
+          <div>
+            <div class="msg-bubble">Restarting Notification Service... Health check passed. Service is back online. Connection pool increased to 100. Incident INC-2041 resolved. I have logged this to the knowledge base.</div>
+            <div class="msg-time">09:02 AM</div>
+          </div>
+        </div>
+
+        <div class="msg user">
+          <div class="msg-avatar user-av">V</div>
+          <div>
+            <div class="msg-bubble">Why is SRJ slow today?</div>
+            <div class="msg-time">10:15 AM</div>
+          </div>
+        </div>
+
+        <div class="msg jarvis">
+          <div class="msg-avatar jarvis-av">J</div>
+          <div>
+            <div class="msg-bubble">I analyzed the last 30 minutes. CPU is normal at 23%. However the PostgreSQL response time increased by 250%. A missing index on the CandidateSkills table is causing full table scans. I recommend creating an index on candidate_id and skill_id. Should I do it?</div>
+            <div class="msg-time">10:15 AM</div>
+          </div>
+        </div>
+
+        <div class="msg user">
+          <div class="msg-avatar user-av">V</div>
+          <div>
+            <div class="msg-bubble">Yes go ahead.</div>
+            <div class="msg-time">10:15 AM</div>
+          </div>
+        </div>
+
+        <div class="msg jarvis" id="lastJarvisMsg">
+          <div class="msg-avatar jarvis-av">J</div>
+          <div>
+            <div class="msg-bubble">Index created. SRJ response time is back to 95ms. Issue resolved. I have stored this solution in the knowledge base — next time this occurs I will recommend this fix immediately.</div>
+            <div class="msg-time">10:16 AM</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Input -->
+      <div class="chat-input-area">
+        <div class="chat-input-wrap">
+          <input class="chat-input" id="chatInput" placeholder="Ask Jarvis anything..." onkeypress="handleChatKey(event)" />
+          <button class="chat-btn btn-voice" id="voiceBtn" onclick="toggleVoice()" title="Voice input">🎤</button>
+          <button class="chat-btn btn-send" onclick="sendMessage()" title="Send">➤</button>
+        </div>
+        <div style="text-align:center;margin-top:8px;font-size:10px;color:var(--text2);font-family:'Orbitron',monospace;letter-spacing:1px;">
+          OR SAY "HEY JARVIS" ANYTIME
+        </div>
+      </div>
+
+    </div>
+  </aside>
+
+</div><!-- end layout -->
+
+<!-- ═══════════════════════════════════ TOAST CONTAINER ═══════════════════════════════════ -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ═══════════════════════════════════ WAKE WORD MODAL ═══════════════════════════════════ -->
+<div class="wake-modal" id="wakeModal">
+  <div class="wake-circle">
+    <div class="wake-ring"></div>
+    <div class="wake-ring2"></div>
+    <div class="wake-circle-inner">J</div>
+  </div>
+  <div class="wake-text">JARVIS ACTIVATED</div>
+  <div class="wake-subtitle">Listening... Speak your command</div>
+  <div class="wake-voice-bars">
+    <div class="wake-voice-bar"></div>
+    <div class="wake-voice-bar"></div>
+    <div class="wake-voice-bar"></div>
+    <div class="wake-voice-bar"></div>
+    <div class="wake-voice-bar"></div>
+    <div class="wake-voice-bar"></div>
+    <div class="wake-voice-bar"></div>
+    <div class="wake-voice-bar"></div>
+    <div class="wake-voice-bar"></div>
+  </div>
+  <button class="wake-close" onclick="hideWakeModal()">✕ Close</button>
+</div>
+
+<!-- ═══════════════════════════════════ SCRIPTS ═══════════════════════════════════ -->
+<script>
+  // ── Clock ──
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('navTime').textContent =
+      now.toLocaleTimeString('en-IN', {hour12:false});
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // ── Tabs ──
+  function setTab(tab) {
+    ['dashboard','incidents','business','apps'].forEach(t => {
+      const el = document.getElementById('tab-' + t);
+      if(el) el.style.display = (t === tab) ? 'block' : 'none';
+    });
+    document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+  }
+
+  // ── Toast ──
+  let toastCount = 0;
+  function showToast(type, title, body, showActions) {
+    const id = 'toast-' + (++toastCount);
+    const actionsHtml = showActions ? `
+      <div class="toast-actions">
+        <button class="toast-btn approve" onclick="approveAction('${id}')">✓ Approve</button>
+        <button class="toast-btn deny" onclick="removeToast('${id}')">✕ Deny</button>
+      </div>` : '';
+    const html = `
+      <div class="toast ${type}" id="${id}">
+        <div class="toast-title">
+          ${title}
+          <span class="toast-close" onclick="removeToast('${id}')">✕</span>
+        </div>
+        <div class="toast-body">${body}</div>
+        ${actionsHtml}
+      </div>`;
+    document.getElementById('toastContainer').insertAdjacentHTML('beforeend', html);
+    setTimeout(() => removeToast(id), showActions ? 15000 : 6000);
+  }
+
+  function removeToast(id) {
+    const el = document.getElementById(id);
+    if(el) el.style.animation = 'toastIn 0.3s ease reverse';
+    setTimeout(() => { if(el) el.remove(); }, 280);
+  }
+
+  function approveAction(id) {
+    removeToast(id);
+    addChatMessage('jarvis', 'Action approved. Executing now... Completed successfully. Service is healthy. Incident closed.');
+    showToast('info', '✅ Action Completed', 'Jarvis executed the approved action. Service health verified.', false);
+  }
+
+  function showIncidentToast() {
+    showToast('info', '🔵 SRJ Platform', 'All metrics healthy. CPU 23%, Memory 41%, Response time 95ms. Last checked 3 seconds ago.', false);
+  }
+
+  function showWarningToast() {
+    showToast('warning', '⚠ PG Service — Memory Warning', 'Memory usage at 88%. Based on historical trends, failure predicted in ~12 minutes. Recommended: scale the service. Approve?', true);
+  }
+
+  function showApprovalToast() {
+    showToast('critical', '🔴 Notification Service DOWN', 'Root cause: DB connection pool exhausted (50/50 connections in use). Jarvis recommends: restart service + increase pool to 100. Approve action?', true);
+  }
+
+  // ── Wake Modal ──
+  function showWakeModal() {
+    document.getElementById('wakeModal').classList.add('show');
+    setTimeout(() => {
+      hideWakeModal();
+      addChatMessage('user', 'Hey Jarvis, what is the current status of all applications?');
+      setTimeout(() => {
+        addTyping();
+        setTimeout(() => {
+          removeTyping();
+          addChatMessage('jarvis', 'All 12 applications are online. 11 healthy, 1 in warning state (PG Service — memory at 88%). 1 critical incident awaiting your approval: Notification Service restart. No other active issues. Shall I read out the full report?');
+        }, 2000);
+      }, 500);
+    }, 4000);
+  }
+
+  function hideWakeModal() {
+    document.getElementById('wakeModal').classList.remove('show');
+  }
+
+  // ── Chat ──
+  function handleChatKey(e) { if(e.key === 'Enter') sendMessage(); }
+
+  function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if(!text) return;
+    input.value = '';
+    addChatMessage('user', text);
+    addTyping();
+    setTimeout(() => {
+      removeTyping();
+      const response = getJarvisResponse(text.toLowerCase());
+      addChatMessage('jarvis', response);
+    }, 1200 + Math.random() * 800);
+  }
+
+  function getJarvisResponse(text) {
+    if(text.includes('status') || text.includes('how is') || text.includes('health'))
+      return 'All 12 applications are currently monitored. 11 healthy, 1 warning (PG Service), 1 critical (Notification Service awaiting your approval). Kafka, Redis and PostgreSQL are all operational. No data loss detected.';
+    if(text.includes('srj') || text.includes('slow') || text.includes('performance'))
+      return 'SRJ is currently running well. Response time is 95ms, CPU at 23%, memory at 41%. The earlier slow query issue (missing index on CandidateSkills) was resolved at 10:16 AM on your approval. No current issues.';
+    if(text.includes('pg') || text.includes('payroll') || text.includes('memory'))
+      return 'PG Service memory is at 88% and rising. Based on the last 30 minutes of data, I predict it may reach critical in approximately 12 minutes. I recommend scaling the service. Should I initiate the scale-up?';
+    if(text.includes('notification') || text.includes('down'))
+      return 'Notification Service is currently down. Root cause is database connection pool exhaustion — all 50 connections are occupied. I am ready to restart the service and increase the pool size to 100. Do you approve?';
+    if(text.includes('job') || text.includes('posting'))
+      return 'I can create a job posting for you. What role are you looking to post? I will check previous postings and suggest a template to save time.';
+    if(text.includes('candidate') || text.includes('java') || text.includes('react'))
+      return 'I found 47 candidates matching your recent requirements. Java: 23 candidates, React: 14, others: 10. Want me to rank them by experience and send interview invitations to the top 10?';
+    if(text.includes('report') || text.includes('summary'))
+      return 'I can generate a report. Options: Weekly Hiring Summary, Monthly Revenue vs Target, Incident Analysis, or Candidate Pipeline Report. Which one would you like? I can email it to the management team automatically.';
+    if(text.includes('restart') || text.includes('fix') || text.includes('heal'))
+      return 'I can initiate that action. To confirm — this will restart the service which may briefly interrupt active sessions. Shall I proceed? Say Yes to approve or No to cancel.';
+    if(text.includes('yes') || text.includes('go ahead') || text.includes('proceed') || text.includes('approve'))
+      return 'Action approved. Executing now... Completed. Health verification passed. I have logged this action with your approval timestamp for the audit trail.';
+    if(text.includes('no') || text.includes('cancel') || text.includes('stop'))
+      return 'Understood. Action cancelled. I have notified the engineering team and created a ticket. I will continue monitoring and alert you if the situation worsens.';
+    if(text.includes('hello') || text.includes('hi') || text.includes('morning'))
+      return 'Hello Venkatesh. I have been monitoring all 12 applications continuously. There are 2 items requiring your attention today. All other systems are healthy. How can I assist you?';
+    return 'Understood. I am checking all relevant data across the 12 monitored applications. Based on current metrics and historical patterns, I will have a detailed analysis for you in a moment. Is there a specific application or metric you want me to focus on?';
+  }
+
+  function addChatMessage(role, text) {
+    const container = document.getElementById('chatMessages');
+    const time = new Date().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', hour12:true});
+    const isJarvis = role === 'jarvis';
+    const html = `
+      <div class="msg ${role}" id="msg-${Date.now()}">
+        <div class="msg-avatar ${isJarvis ? 'jarvis-av' : 'user-av'}">${isJarvis ? 'J' : 'V'}</div>
+        <div>
+          <div class="msg-bubble">${text}</div>
+          <div class="msg-time">${time}</div>
+        </div>
+      </div>`;
+    container.insertAdjacentHTML('beforeend', html);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function addTyping() {
+    const container = document.getElementById('chatMessages');
+    container.insertAdjacentHTML('beforeend', `
+      <div class="msg jarvis" id="typing-indicator">
+        <div class="msg-avatar jarvis-av">J</div>
+        <div class="typing">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+        </div>
+      </div>`);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function removeTyping() {
+    const t = document.getElementById('typing-indicator');
+    if(t) t.remove();
+  }
+
+  function toggleVoice() {
+    const btn = document.getElementById('voiceBtn');
+    const isListening = btn.classList.toggle('listening');
+    btn.title = isListening ? 'Listening...' : 'Voice input';
+    if(isListening) {
+      setTimeout(() => {
+        btn.classList.remove('listening');
+        showWakeModal();
+      }, 2000);
+    }
+  }
+
+  // ── Auto proactive notifications ──
+  setTimeout(() => {
+    showToast('critical', '🔴 Critical — Notification Service', 'Service is DOWN. DB connection pool exhausted. Jarvis is ready to restart. Your approval needed.', true);
+  }, 3000);
+
+  setTimeout(() => {
+    showToast('warning', '⚠ PG Service Memory Warning', 'Memory at 88%. Predicted failure in ~12 minutes. Jarvis recommends scaling. Approve?', true);
+  }, 7000);
+
+  setTimeout(() => {
+    showToast('info', '🕐 Hourly Check — All Systems', '11/12 apps healthy. Kafka: OK · Redis: OK · PostgreSQL: OK · 3 AI workers active.', false);
+  }, 12000);
+</script>
+
+</body>
+</html>
