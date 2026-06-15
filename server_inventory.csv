@@ -1,0 +1,3 @@
+server_name,control_panel,environment,ip_or_hostname,os,access_method,login_user,notes
+example-ionos-1,Ionos,PROD,203.0.113.10,Ubuntu 22.04,ssh,key,deploy,Do NOT include passwords in this file
+example-plesk-1,Plesk,UAT,198.51.100.20,CentOS 7,plesk-api,api-user,If Plesk UI only, note admin email
