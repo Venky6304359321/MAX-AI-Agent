@@ -642,9 +642,146 @@
     .layout { grid-template-columns:1fr; }
     .sidebar, .right-panel { display:none; }
   }
+
+  /* ── LOGIN OVERLAY ── */
+  #loginOverlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: radial-gradient(ellipse at 50% 40%, #041830 0%, #020b18 100%);
+    display: flex; align-items: center; justify-content: center;
+  }
+  #loginOverlay.hidden { display: none; }
+  .login-box {
+    width: 420px; max-width: 95vw;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 40px 36px;
+    box-shadow: 0 0 60px rgba(0,100,255,0.15);
+    text-align: center;
+  }
+  .login-logo {
+    font-family: 'Orbitron', monospace;
+    font-size: 32px; font-weight: 900;
+    color: var(--cyan);
+    text-shadow: 0 0 20px var(--cyan), 0 0 40px var(--cyan2);
+    letter-spacing: 5px;
+    margin-bottom: 4px;
+  }
+  .login-subtitle {
+    font-size: 12px; color: var(--text2);
+    letter-spacing: 2px;
+    margin-bottom: 32px;
+  }
+  .login-step { display: none; }
+  .login-step.active { display: block; }
+  .login-label {
+    font-size: 13px; color: var(--text2);
+    text-align: left; margin-bottom: 8px;
+  }
+  .login-input {
+    width: 100%; padding: 12px 16px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border 0.2s;
+    margin-bottom: 8px;
+  }
+  .login-input:focus { border-color: var(--cyan); }
+  .login-error {
+    font-size: 12px; color: var(--red);
+    min-height: 18px; margin-bottom: 8px;
+    text-align: left;
+  }
+  .login-btn {
+    width: 100%; padding: 13px;
+    background: linear-gradient(90deg, var(--cyan2), var(--blue));
+    border: none; border-radius: 8px;
+    color: #fff;
+    font-family: 'Orbitron', monospace;
+    font-size: 13px; font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: opacity 0.2s, box-shadow 0.2s;
+    margin-top: 4px;
+  }
+  .login-btn:hover { opacity: 0.9; box-shadow: var(--glow2); }
+  .login-otp-row {
+    display: flex; gap: 10px; justify-content: center;
+    margin-bottom: 8px;
+  }
+  .otp-box {
+    width: 44px; height: 52px;
+    text-align: center;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--cyan);
+    font-family: 'Orbitron', monospace;
+    font-size: 22px; font-weight: 700;
+    outline: none;
+    transition: border 0.2s;
+  }
+  .otp-box:focus { border-color: var(--cyan); }
+  .login-info { font-size: 12px; color: var(--text2); margin-bottom: 16px; }
+  .login-success-icon {
+    font-size: 48px; margin-bottom: 12px;
+  }
+  .login-success-name {
+    font-family: 'Orbitron', monospace;
+    font-size: 18px; color: var(--green);
+    margin-bottom: 6px;
+  }
+  .login-success-role {
+    font-size: 13px; color: var(--text2);
+    margin-bottom: 24px;
+  }
 </style>
 </head>
 <body>
+
+<!-- ═══════════════════════ LOGIN OVERLAY ═══════════════════════ -->
+<div id="loginOverlay">
+  <div class="login-box">
+    <div class="login-logo">MAX</div>
+    <div class="login-subtitle">ENTERPRISE AI PLATFORM</div>
+
+    <!-- STEP 1: Enter Email -->
+    <div class="login-step active" id="stepEmail">
+      <div class="login-label">Work Email Address</div>
+      <input class="login-input" id="emailInput" type="email" placeholder="you@company.com" autocomplete="email"
+        onkeydown="if(event.key==='Enter') submitEmail()" />
+      <div class="login-error" id="emailError"></div>
+      <button class="login-btn" onclick="submitEmail()">CONTINUE →</button>
+    </div>
+
+    <!-- STEP 2: Enter OTP -->
+    <div class="login-step" id="stepOtp">
+      <div class="login-info">OTP sent to <span id="sentTo" style="color:var(--cyan)"></span></div>
+      <div class="login-otp-row" id="otpBoxes">
+        <input class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+        <input class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+        <input class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+        <input class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+        <input class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+        <input class="otp-box" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+      </div>
+      <div class="login-error" id="otpError"></div>
+      <button class="login-btn" onclick="submitOtp()">VERIFY OTP</button>
+    </div>
+
+    <!-- STEP 3: Success + Redirect -->
+    <div class="login-step" id="stepSuccess">
+      <div class="login-success-icon">✦</div>
+      <div class="login-success-name" id="successName"></div>
+      <div class="login-success-role" id="successRole"></div>
+      <div class="login-info" style="color:var(--green)">Redirecting to your dashboard…</div>
+    </div>
+  </div>
+</div>
 
 <!-- Scan line effect -->
 <div class="scan-line"></div>
@@ -1462,6 +1599,77 @@
   setTimeout(() => {
     showToast('info', '🕐 Hourly Check — All Systems', '11/12 apps healthy. Kafka: OK · Redis: OK · PostgreSQL: OK · 3 AI workers active.', false);
   }, 12000);
+
+  // ═══════════════════════ LOGIN / AUTH ═══════════════════════
+  // Demo users — in real app these come from /api/auth/validate-email + /api/auth/otp/verify
+  const DEMO_USERS = {
+    'venkatesh@company.com':  { name: 'Venkatesh N',   role: 'SUPER_ADMIN',  otp: '123456' },
+    'dev@company.com':        { name: 'Dev User',       role: 'DEVELOPER',    otp: '234567' },
+    'marketing@company.com':  { name: 'Marketing User', role: 'MARKETING',    otp: '345678' },
+    'ops@company.com':        { name: 'Operations User',role: 'OPERATIONS',   otp: '456789' },
+    'ceo@company.com':        { name: 'CEO',            role: 'EXECUTIVE',    otp: '567890' },
+  };
+
+  // Role → page (in real app: Angular router navigates to role-specific route)
+  const ROLE_REDIRECT = {
+    SUPER_ADMIN: 'Dashboard — Full Access',
+    DEVELOPER:   'Developer View — Assigned Apps Only',
+    MARKETING:   'Marketing View — CRM & Campaigns',
+    OPERATIONS:  'Operations View — Status & Tickets',
+    EXECUTIVE:   'Executive View — Business KPIs',
+  };
+
+  let _currentEmail = '';
+
+  function showStep(id) {
+    document.querySelectorAll('.login-step').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function submitEmail() {
+    const email = document.getElementById('emailInput').value.trim().toLowerCase();
+    const err = document.getElementById('emailError');
+    if(!email || !email.includes('@')) { err.textContent = 'Enter a valid email address.'; return; }
+    if(!DEMO_USERS[email]) { err.textContent = 'Email not registered. Contact your admin.'; return; }
+    err.textContent = '';
+    _currentEmail = email;
+    document.getElementById('sentTo').textContent = email;
+    showStep('stepOtp');
+    document.querySelector('#otpBoxes .otp-box').focus();
+  }
+
+  // OTP boxes: auto-advance and backspace navigation
+  document.querySelectorAll('.otp-box').forEach((box, i, all) => {
+    box.addEventListener('input', () => {
+      box.value = box.value.replace(/[^0-9]/g, '').slice(-1);
+      if(box.value && i < all.length - 1) all[i+1].focus();
+    });
+    box.addEventListener('keydown', e => {
+      if(e.key === 'Backspace' && !box.value && i > 0) all[i-1].focus();
+      if(e.key === 'Enter') submitOtp();
+    });
+  });
+
+  function submitOtp() {
+    const boxes = document.querySelectorAll('.otp-box');
+    const entered = Array.from(boxes).map(b => b.value).join('');
+    const err = document.getElementById('otpError');
+    if(entered.length < 6) { err.textContent = 'Enter all 6 digits.'; return; }
+    const user = DEMO_USERS[_currentEmail];
+    if(!user || entered !== user.otp) { err.textContent = 'Incorrect OTP. Try again.'; return; }
+    err.textContent = '';
+    // Success
+    document.getElementById('successName').textContent = user.name;
+    document.getElementById('successRole').textContent = ROLE_REDIRECT[user.role] || user.role;
+    showStep('stepSuccess');
+    // Update nav username
+    document.querySelector('.nav-username').textContent = user.name.split(' ')[0];
+    document.querySelector('.nav-avatar').textContent = user.name[0];
+    // Hide overlay after 1.5s
+    setTimeout(() => {
+      document.getElementById('loginOverlay').classList.add('hidden');
+    }, 1500);
+  }
 </script>
 
 </body>
